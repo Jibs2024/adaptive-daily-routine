@@ -31,7 +31,7 @@
     color: var(--text);
     font-family: -apple-system, 'DM Sans', sans-serif;
     min-height: 100vh;
-    padding: 18px 14px 60px;
+    padding: max(18px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
   }
   .wrap { max-width: 480px; margin: 0 auto; }
   header { text-align: center; padding: 6px 0 18px; }
