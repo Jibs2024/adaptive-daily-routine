@@ -1,0 +1,52 @@
+{
+  "id": "generic",
+  "name": "Sleep-Anchored",
+  "subtitle": "Sleep/wake anchored — no religious content",
+  "anchorPackId": "sleep-wake",
+  "schedule": {
+    "full": [
+      {
+        "time": "10:00pm", "title": "Wind down", "isAnchor": false, "note": "",
+        "detailType": "checklist",
+        "detailContent": [
+          { "label": "Take evening meds", "checked": false },
+          { "label": "Screens off", "checked": false },
+          { "label": "Prep tomorrow's bag", "checked": false }
+        ]
+      },
+      { "time": "10:30pm", "title": "Sleep begins", "isAnchor": true, "anchorId": "sleep-begins", "note": "~7.5h block" },
+      { "time": "6:00am", "title": "Wake up", "isAnchor": true, "anchorId": "wake-up", "note": "" },
+      { "time": "6:15am", "title": "Exercise", "isAnchor": false, "note": "Full training session" },
+      {
+        "time": "7:00am", "title": "Shower, breakfast", "isAnchor": false, "note": "",
+        "detailType": "plan",
+        "detailContent": "Today's planned breakfast: eggs, spinach, sourdough toast.\n\nAfter shower: normal skincare routine."
+      },
+      { "time": "8:30am", "title": "Work", "isAnchor": false, "note": "" },
+      { "time": "12:30pm", "title": "Lunch", "isAnchor": false, "note": "" },
+      { "time": "6:00pm", "title": "Dinner", "isAnchor": false, "note": "" },
+      { "time": "9:30pm", "title": "Wind toward bed", "isAnchor": false, "note": "" }
+    ],
+    "recovery": [
+      {
+        "time": "9:30pm", "title": "Wind down", "isAnchor": false, "note": "",
+        "detailType": "checklist",
+        "detailContent": [
+          { "label": "Take evening meds", "checked": false },
+          { "label": "Screens off early", "checked": false }
+        ]
+      },
+      { "time": "10:00pm", "title": "Sleep begins", "isAnchor": true, "anchorId": "sleep-begins", "note": "Protect this — go longer if needed" },
+      { "time": "7:00am", "title": "Wake up", "isAnchor": true, "anchorId": "wake-up", "note": "Let this drift later if needed" },
+      { "time": "7:15am", "title": "Light movement only", "isAnchor": false, "note": "Walk or stretch — skip training" },
+      {
+        "time": "8:00am", "title": "Shower, easy breakfast", "isAnchor": false, "note": "",
+        "detailType": "plan",
+        "detailContent": "Today's planned breakfast: plain toast + banana.\n\nAfter shower: gentle routine only."
+      },
+      { "time": "9:00am", "title": "Work — pace yourself", "isAnchor": false, "note": "" },
+      { "time": "12:30pm", "title": "Lunch", "isAnchor": false, "note": "Gentler food choices" },
+      { "time": "6:00pm", "title": "Dinner", "isAnchor": false, "note": "Gentler food choices" }
+    ]
+  }
+}

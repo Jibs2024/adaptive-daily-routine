@@ -1,39 +1,62 @@
-function setStatus(key, ok, label) {
-  document.getElementById('dot-' + key).classList.add(ok ? 'ok' : 'fail');
-  document.getElementById('val-' + key).textContent = label;
-}
+import { renderModeToggle } from './components/modeToggle.js';
+import { renderTemplatePicker } from './components/templatePicker.js';
+import { renderSchedule } from './components/scheduleRow.js';
 
-// Service worker: register it, then reflect whether it actually took control.
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js')
-    .then(() => {
-      if (navigator.serviceWorker.controller) {
-        setStatus('sw', true, 'active');
-      } else {
-        // First load after registration — controller attaches next load.
-        setStatus('sw', true, 'registered (reload to activate)');
-      }
-    })
-    .catch((err) => {
-      setStatus('sw', false, 'failed: ' + err.message);
-    });
-} else {
-  setStatus('sw', false, 'not supported');
+  navigator.serviceWorker.register('./service-worker.js').catch((err) => {
+    console.error('Service worker registration failed:', err);
+  });
 }
 
-// Display mode: standalone/fullscreen means it was launched from a home-screen icon.
-const isStandalone =
-  window.matchMedia('(display-mode: standalone)').matches ||
-  window.navigator.standalone === true;
-setStatus('installed', isStandalone, isStandalone ? 'standalone (installed)' : 'browser tab');
+const templatePickerEl = document.getElementById('template-picker');
+const modeToggleEl = document.getElementById('mode-toggle');
+const modeNoteEl = document.getElementById('mode-note');
+const subtitleEl = document.getElementById('subtitle');
+const scheduleEl = document.getElementById('schedule');
 
-// Manifest: confirm the browser could find and parse it.
-const manifestLink = document.querySelector('link[rel="manifest"]');
-if (manifestLink) {
-  fetch(manifestLink.href)
-    .then((res) => (res.ok ? res.json() : Promise.reject(new Error('HTTP ' + res.status))))
-    .then((data) => setStatus('manifest', true, data.name))
-    .catch((err) => setStatus('manifest', false, 'failed: ' + err.message));
-} else {
-  setStatus('manifest', false, 'missing <link>');
+let templateIndex = [];
+let modeNotes = {};
+const templateCache = new Map();
+
+let currentTemplateId = null;
+let currentMode = 'full';
+
+async function loadTemplate(id) {
+  if (templateCache.has(id)) return templateCache.get(id);
+  const entry = templateIndex.find((t) => t.id === id);
+  const data = await fetch(`src/templates/${entry.file}`).then((res) => res.json());
+  templateCache.set(id, data);
+  return data;
 }
+
+async function render() {
+  const template = await loadTemplate(currentTemplateId);
+
+  renderTemplatePicker(templatePickerEl, templateIndex, currentTemplateId, selectTemplate);
+  renderModeToggle(modeToggleEl, currentMode, selectMode);
+
+  subtitleEl.textContent = template.subtitle;
+  modeNoteEl.textContent = modeNotes[currentMode];
+  renderSchedule(scheduleEl, template.schedule[currentMode], currentMode);
+}
+
+async function selectTemplate(id) {
+  currentTemplateId = id;
+  await render();
+}
+
+async function selectMode(mode) {
+  currentMode = mode;
+  await render();
+}
+
+async function init() {
+  [templateIndex, modeNotes] = await Promise.all([
+    fetch('src/templates/index.json').then((res) => res.json()),
+    fetch('src/config/mode-notes.json').then((res) => res.json()),
+  ]);
+  currentTemplateId = templateIndex[0].id;
+  await render();
+}
+
+init();

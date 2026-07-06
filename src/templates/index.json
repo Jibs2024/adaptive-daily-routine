@@ -1,0 +1,14 @@
+[
+  {
+    "id": "prayer-anchored",
+    "file": "prayer-anchored.json",
+    "label": "Prayer-Anchored",
+    "sublabel": "(Muslim)"
+  },
+  {
+    "id": "generic",
+    "file": "generic.json",
+    "label": "Sleep-Anchored",
+    "sublabel": "(Generic)"
+  }
+]

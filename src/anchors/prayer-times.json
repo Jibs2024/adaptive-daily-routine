@@ -1,0 +1,12 @@
+{
+  "id": "prayer-times",
+  "name": "Muslim Prayer Times",
+  "events": [
+    { "id": "tahajjud", "label": "Tahajjud", "time": "1:22am" },
+    { "id": "fajr", "label": "Fajr adhan", "time": "5:33am" },
+    { "id": "dhuhr", "label": "Dhuhr", "time": "12:00pm" },
+    { "id": "asr", "label": "Asr", "time": "2:41pm" },
+    { "id": "maghrib", "label": "Maghrib", "time": "5:00pm" },
+    { "id": "isha", "label": "Isha", "time": "6:22pm" }
+  ]
+}

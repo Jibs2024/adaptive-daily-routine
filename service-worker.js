@@ -1,4 +1,4 @@
-const CACHE_NAME = 'adaptive-routine-v1';
+const CACHE_NAME = 'adaptive-routine-v2';
 
 const APP_SHELL = [
   './',
@@ -6,6 +6,16 @@ const APP_SHELL = [
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './src/app.js',
+  './src/components/modeToggle.js',
+  './src/components/templatePicker.js',
+  './src/components/scheduleRow.js',
+  './src/config/mode-notes.json',
+  './src/templates/index.json',
+  './src/templates/prayer-anchored.json',
+  './src/templates/generic.json',
+  './src/anchors/prayer-times.json',
+  './src/anchors/sleep-wake.json',
 ];
 
 self.addEventListener('install', (event) => {
