@@ -84,6 +84,20 @@
   .tap-hint { font-size: 11px; color: var(--text-dim); opacity: 0.6; }
   .activity .note { display: block; color: var(--text-dim); font-size: 12px; margin-top: 2px; }
 
+  .log-box {
+    margin-top: 22px; padding: 14px 16px; background: var(--bg-card); border-radius: 10px;
+    border: 1px solid var(--line);
+  }
+  .log-box strong { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); display: block; margin-bottom: 10px; }
+  .log-days { display: flex; gap: 6px; }
+  .log-day {
+    flex: 1; text-align: center; padding: 8px 2px; border-radius: 7px; font-size: 11px;
+    background: #14181B; color: var(--text-dim); border: 1px solid var(--line);
+  }
+  .log-day.full { border-color: var(--full); color: var(--full); }
+  .log-day.recovery { border-color: var(--recovery); color: var(--recovery); }
+  .log-day .d { font-size: 9px; opacity: 0.7; display: block; margin-bottom: 2px; }
+
   .foot { text-align: center; font-size: 11px; color: var(--text-dim); margin-top: 24px; opacity: 0.6; line-height: 1.6; }
 
   /* detail sheet */
@@ -136,6 +150,11 @@
   <div class="mode-note" id="mode-note"></div>
 
   <div id="schedule"></div>
+
+  <div class="log-box">
+    <strong>Mode log — last 7 days</strong>
+    <div class="log-days" id="log-days"></div>
+  </div>
 
   <div class="foot">Tap any task with a &rsaquo; to see its details.</div>
 </div>

@@ -2,6 +2,8 @@ import { renderModeToggle } from './components/modeToggle.js';
 import { renderTemplatePicker } from './components/templatePicker.js';
 import { renderSchedule } from './components/scheduleRow.js';
 import { renderDetailSheet, refreshDetailSheetBody, closeDetailSheet } from './components/detailSheet.js';
+import { renderModeLog } from './components/modeLog.js';
+import { logMode, getMode, getLast7Days } from './storage.js';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js').catch((err) => {
@@ -23,6 +25,7 @@ const sheetEls = {
   body: document.getElementById('sheet-body'),
 };
 const sheetCloseBtn = document.getElementById('sheet-close');
+const logDaysEl = document.getElementById('log-days');
 
 let templateIndex = [];
 let modeNotes = {};
@@ -71,6 +74,7 @@ async function render() {
   subtitleEl.textContent = template.subtitle;
   modeNoteEl.textContent = modeNotes[currentMode];
   renderSchedule(scheduleEl, currentRows, currentMode);
+  renderModeLog(logDaysEl, getLast7Days());
 }
 
 async function selectTemplate(id) {
@@ -80,6 +84,7 @@ async function selectTemplate(id) {
 
 async function selectMode(mode) {
   currentMode = mode;
+  logMode(mode);
   await render();
 }
 
@@ -98,6 +103,10 @@ async function init() {
     fetch('src/config/mode-notes.json').then((res) => res.json()),
   ]);
   currentTemplateId = templateIndex[0].id;
+
+  const loggedToday = getMode(new Date());
+  if (loggedToday) currentMode = loggedToday;
+
   await render();
 }
 
