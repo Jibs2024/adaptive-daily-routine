@@ -72,6 +72,7 @@ function toggleCheck(itemIdx) {
   const row = currentRows[openRowIndex];
   row.detailContent[itemIdx].checked = !row.detailContent[itemIdx].checked;
   refreshDetailSheetBody(sheetEls, row, toggleCheck);
+  renderSchedule(scheduleEl, currentRows, currentMode);
 }
 
 function openRow(index) {
