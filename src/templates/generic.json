@@ -2,7 +2,7 @@
   "id": "generic",
   "name": "Sleep-Anchored",
   "subtitle": "Sleep/wake anchored — no religious content",
-  "anchorPackId": "sleep-wake",
+  "anchorPackId": "none",
   "schedule": {
     "full": [
       {
@@ -14,8 +14,8 @@
           { "label": "Prep tomorrow's bag", "checked": false }
         ]
       },
-      { "time": "10:30pm", "title": "Sleep begins", "isAnchor": true, "anchorId": "sleep-begins", "note": "~7.5h block" },
-      { "time": "6:00am", "title": "Wake up", "isAnchor": true, "anchorId": "wake-up", "note": "" },
+      { "time": "10:30pm", "title": "Sleep begins", "isAnchor": false, "note": "~7.5h block" },
+      { "time": "6:00am", "title": "Wake up", "isAnchor": false, "note": "" },
       { "time": "6:15am", "title": "Exercise", "isAnchor": false, "note": "Full training session" },
       {
         "time": "7:00am", "title": "Shower, breakfast", "isAnchor": false, "note": "",
@@ -36,8 +36,8 @@
           { "label": "Screens off early", "checked": false }
         ]
       },
-      { "time": "10:00pm", "title": "Sleep begins", "isAnchor": true, "anchorId": "sleep-begins", "note": "Protect this — go longer if needed" },
-      { "time": "7:00am", "title": "Wake up", "isAnchor": true, "anchorId": "wake-up", "note": "Let this drift later if needed" },
+      { "time": "10:00pm", "title": "Sleep begins", "isAnchor": false, "note": "Protect this — go longer if needed" },
+      { "time": "7:00am", "title": "Wake up", "isAnchor": false, "note": "Let this drift later if needed" },
       { "time": "7:15am", "title": "Light movement only", "isAnchor": false, "note": "Walk or stretch — skip training" },
       {
         "time": "8:00am", "title": "Shower, easy breakfast", "isAnchor": false, "note": "",

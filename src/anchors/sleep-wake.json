@@ -1,8 +1,0 @@
-{
-  "id": "sleep-wake",
-  "name": "Sleep / Wake Only",
-  "events": [
-    { "id": "sleep-begins", "label": "Sleep begins" },
-    { "id": "wake-up", "label": "Wake up" }
-  ]
-}
