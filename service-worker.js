@@ -1,4 +1,4 @@
-const CACHE_NAME = 'adaptive-routine-v3';
+const CACHE_NAME = 'adaptive-routine-v4';
 
 const APP_SHELL = [
   './',
@@ -10,6 +10,7 @@ const APP_SHELL = [
   './src/components/modeToggle.js',
   './src/components/templatePicker.js',
   './src/components/scheduleRow.js',
+  './src/components/detailSheet.js',
   './src/config/mode-notes.json',
   './src/templates/index.json',
   './src/templates/prayer-anchored.json',

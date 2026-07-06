@@ -1,9 +1,9 @@
-export function renderScheduleRow(row) {
+export function renderScheduleRow(row, index) {
   return `
-    <div class="row ${row.isAnchor ? 'anchor' : ''}">
+    <div class="row ${row.isAnchor ? 'anchor' : ''}" data-index="${index}">
       <div class="time">${row.time}</div>
       <div class="activity">
-        <div class="activity-title">${row.title}</div>
+        <div class="activity-title">${row.title} ${row.detailType ? '<span class="tap-hint">›</span>' : ''}</div>
         ${row.note ? `<span class="note">${row.note}</span>` : ''}
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { renderModeToggle } from './components/modeToggle.js';
 import { renderTemplatePicker } from './components/templatePicker.js';
 import { renderSchedule } from './components/scheduleRow.js';
+import { renderDetailSheet, refreshDetailSheetBody, closeDetailSheet } from './components/detailSheet.js';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js').catch((err) => {
@@ -14,12 +15,23 @@ const modeNoteEl = document.getElementById('mode-note');
 const subtitleEl = document.getElementById('subtitle');
 const scheduleEl = document.getElementById('schedule');
 
+const sheetEls = {
+  backdrop: document.getElementById('backdrop'),
+  sheet: document.getElementById('sheet'),
+  title: document.getElementById('sheet-title'),
+  time: document.getElementById('sheet-time'),
+  body: document.getElementById('sheet-body'),
+};
+const sheetCloseBtn = document.getElementById('sheet-close');
+
 let templateIndex = [];
 let modeNotes = {};
 const templateCache = new Map();
 
 let currentTemplateId = null;
 let currentMode = 'full';
+let currentRows = [];
+let openRowIndex = null;
 
 async function loadTemplate(id) {
   if (templateCache.has(id)) return templateCache.get(id);
@@ -29,15 +41,36 @@ async function loadTemplate(id) {
   return data;
 }
 
+function closeSheet() {
+  closeDetailSheet(sheetEls);
+  openRowIndex = null;
+}
+
+function toggleCheck(itemIdx) {
+  const row = currentRows[openRowIndex];
+  row.detailContent[itemIdx].checked = !row.detailContent[itemIdx].checked;
+  refreshDetailSheetBody(sheetEls, row, toggleCheck);
+}
+
+function openRow(index) {
+  const row = currentRows[index];
+  if (!row.detailType) return;
+  openRowIndex = index;
+  renderDetailSheet(sheetEls, row, toggleCheck);
+}
+
 async function render() {
+  closeSheet();
+
   const template = await loadTemplate(currentTemplateId);
+  currentRows = template.schedule[currentMode];
 
   renderTemplatePicker(templatePickerEl, templateIndex, currentTemplateId, selectTemplate);
   renderModeToggle(modeToggleEl, currentMode, selectMode);
 
   subtitleEl.textContent = template.subtitle;
   modeNoteEl.textContent = modeNotes[currentMode];
-  renderSchedule(scheduleEl, template.schedule[currentMode], currentMode);
+  renderSchedule(scheduleEl, currentRows, currentMode);
 }
 
 async function selectTemplate(id) {
@@ -49,6 +82,15 @@ async function selectMode(mode) {
   currentMode = mode;
   await render();
 }
+
+scheduleEl.addEventListener('click', (e) => {
+  const rowEl = e.target.closest('.row[data-index]');
+  if (!rowEl) return;
+  openRow(Number(rowEl.dataset.index));
+});
+
+sheetEls.backdrop.addEventListener('click', closeSheet);
+sheetCloseBtn.addEventListener('click', closeSheet);
 
 async function init() {
   [templateIndex, modeNotes] = await Promise.all([
