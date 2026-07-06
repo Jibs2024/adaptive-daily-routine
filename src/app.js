@@ -3,6 +3,7 @@ import { renderTemplatePicker } from './components/templatePicker.js';
 import { renderSchedule } from './components/scheduleRow.js';
 import { renderDetailSheet, refreshDetailSheetBody, closeDetailSheet } from './components/detailSheet.js';
 import { renderModeLog } from './components/modeLog.js';
+import { renderNavBar } from './components/navBar.js';
 import { logMode, getMode, getLast7Days } from './storage.js';
 
 if ('serviceWorker' in navigator) {
@@ -26,6 +27,11 @@ const sheetEls = {
 };
 const sheetCloseBtn = document.getElementById('sheet-close');
 const logDaysEl = document.getElementById('log-days');
+const navBarEl = document.getElementById('bottom-nav');
+const viewEls = {
+  today: document.getElementById('view-today'),
+  history: document.getElementById('view-history'),
+};
 
 let templateIndex = [];
 let modeNotes = {};
@@ -35,6 +41,19 @@ let currentTemplateId = null;
 let currentMode = 'full';
 let currentRows = [];
 let openRowIndex = null;
+let currentView = 'today';
+
+function updateView() {
+  Object.entries(viewEls).forEach(([id, el]) => {
+    el.classList.toggle('active', id === currentView);
+  });
+  renderNavBar(navBarEl, currentView, selectView);
+}
+
+function selectView(view) {
+  currentView = view;
+  updateView();
+}
 
 async function loadTemplate(id) {
   if (templateCache.has(id)) return templateCache.get(id);
@@ -107,6 +126,7 @@ async function init() {
   const loggedToday = getMode(new Date());
   if (loggedToday) currentMode = loggedToday;
 
+  updateView();
   await render();
 }
 

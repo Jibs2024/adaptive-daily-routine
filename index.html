@@ -31,7 +31,7 @@
     color: var(--text);
     font-family: -apple-system, 'DM Sans', sans-serif;
     min-height: 100vh;
-    padding: max(18px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+    padding: max(18px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) calc(76px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
   }
   .wrap { max-width: 480px; margin: 0 auto; }
   header { text-align: center; padding: 6px 0 18px; }
@@ -100,6 +100,22 @@
 
   .foot { text-align: center; font-size: 11px; color: var(--text-dim); margin-top: 24px; opacity: 0.6; line-height: 1.6; }
 
+  /* views + bottom nav */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .bottom-nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; max-width: 480px; margin: 0 auto;
+    display: flex; background: var(--bg-card); border-top: 1px solid var(--line);
+    padding: 8px 14px calc(8px + env(safe-area-inset-bottom));
+  }
+  .nav-btn {
+    flex: 1; border: none; background: transparent; color: var(--text-dim);
+    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; letter-spacing: 0.5px;
+    text-transform: uppercase; padding: 8px 0; cursor: pointer;
+  }
+  .nav-btn.active { color: var(--text); font-weight: 700; }
+
   /* detail sheet */
   .sheet-backdrop {
     position: fixed; inset: 0; background: rgba(0,0,0,0.55); opacity: 0; pointer-events: none;
@@ -140,24 +156,30 @@
     <div class="subtitle" id="subtitle">Adaptive schedule</div>
   </header>
 
-  <div class="template-picker">
-    <div class="template-label">Template</div>
-    <div class="template-options" id="template-picker"></div>
-  </div>
+  <section id="view-today" class="view active">
+    <div class="template-picker">
+      <div class="template-label">Template</div>
+      <div class="template-options" id="template-picker"></div>
+    </div>
 
-  <div class="toggle" id="mode-toggle"></div>
+    <div class="toggle" id="mode-toggle"></div>
 
-  <div class="mode-note" id="mode-note"></div>
+    <div class="mode-note" id="mode-note"></div>
 
-  <div id="schedule"></div>
+    <div id="schedule"></div>
 
-  <div class="log-box">
-    <strong>Mode log — last 7 days</strong>
-    <div class="log-days" id="log-days"></div>
-  </div>
+    <div class="foot">Tap any task with a &rsaquo; to see its details.</div>
+  </section>
 
-  <div class="foot">Tap any task with a &rsaquo; to see its details.</div>
+  <section id="view-history" class="view">
+    <div class="log-box">
+      <strong>Mode log — last 7 days</strong>
+      <div class="log-days" id="log-days"></div>
+    </div>
+  </section>
 </div>
+
+<nav class="bottom-nav" id="bottom-nav"></nav>
 
 <div class="sheet-backdrop" id="backdrop"></div>
 <div class="sheet" id="sheet">
