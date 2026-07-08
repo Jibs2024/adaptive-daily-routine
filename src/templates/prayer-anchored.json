@@ -23,7 +23,7 @@
       { "time": "2:00am", "title": "Second sleep", "isAnchor": false, "note": "~3h block" },
       { "time": "5:00am", "title": "Wake, wudu", "isAnchor": false, "note": "Warm water + morning must-haves" },
       { "time": "5:33am", "title": "Fajr adhan", "isAnchor": true, "anchorId": "fajr", "note": "" },
-      { "time": "6:15am", "title": "Exercise", "isAnchor": false, "note": "Phase 1 remedial or Upper Body — see split" },
+      { "time": "6:15am", "title": "Exercise", "isAnchor": false, "note": "Phase 1 remedial or Upper Body" },
       {
         "time": "7:00am", "title": "Shower, breakfast", "isAnchor": false, "note": "",
         "detailType": "plan",
