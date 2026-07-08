@@ -9,7 +9,7 @@ function hasStaticContent(row) {
 function renderChecklistItem(item, groupIdx, itemIdx, editMode) {
   const control = editMode
     ? `<button class="checklist-remove" data-group="${groupIdx}" data-idx="${itemIdx}" aria-label="Remove item">×</button>`
-    : `<input type="checkbox" ${item.checked ? 'checked' : ''} data-group="${groupIdx}" data-idx="${itemIdx}">`;
+    : `<input type="checkbox" ${item.checked ? 'checked' : ''} data-group="${groupIdx}" data-idx="${itemIdx}" aria-label="${item.name}">`;
   return `
     <div class="checklist-item ${item.checked ? 'checked' : ''}" data-group="${groupIdx}" data-idx="${itemIdx}">
       ${control}
@@ -30,7 +30,7 @@ function renderAddRow(groupIdx, isAdding) {
   }
   return `
     <div class="add-item-row">
-      <input type="text" class="add-item-input" data-group="${groupIdx}" placeholder="New item name">
+      <input type="text" class="add-item-input" data-group="${groupIdx}" placeholder="New item name" aria-label="New item name">
       <button class="add-item-confirm" data-group="${groupIdx}">Add</button>
     </div>
   `;
@@ -105,7 +105,7 @@ function renderBody(bodyEl, row, editState, handlers) {
 
   if (staticContent) {
     html += editState.editMode
-      ? `<textarea class="static-content-editor" rows="8">${escapeHtml(row.detailContent)}</textarea>`
+      ? `<textarea class="static-content-editor" rows="8" aria-label="Edit ${row.title} content">${escapeHtml(row.detailContent)}</textarea>`
       : row.detailContent
           .split('\n\n')
           .map((p) => `<p>${p}</p>`)

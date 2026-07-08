@@ -628,6 +628,19 @@ scheduleEl.addEventListener('click', (e) => {
   openRow(Number(rowEl.dataset.index));
 });
 
+// Rows are role="button"/tabindex divs (can't be real <button>s - they
+// sometimes contain a nested delete button in schedule-edit mode), so
+// Enter/Space needs to be wired manually. The delete button itself is
+// already a real button and gets native keyboard support for free.
+scheduleEl.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  if (e.target.closest('.row-delete-btn')) return;
+  const rowEl = e.target.closest('.row[data-index]');
+  if (!rowEl) return;
+  e.preventDefault();
+  openRow(Number(rowEl.dataset.index));
+});
+
 sheetEls.backdrop.addEventListener('click', closeSheet);
 sheetCloseBtn.addEventListener('click', closeSheet);
 sheetEditBtn.addEventListener('click', toggleEditMode);

@@ -5,7 +5,8 @@ function checklistBadge(row) {
   const done = allItems.filter((item) => item.checked).length;
   if (done === 0) return '';
   const check = done === total ? '✓ ' : '';
-  return `<span class="check-badge">${check}${done}/${total}</span>`;
+  const label = done === total ? `All ${total} items checked` : `${done} of ${total} items checked`;
+  return `<span class="check-badge" aria-label="${label}">${check}${done}/${total}</span>`;
 }
 
 export function renderScheduleRow(row, index, scheduleEditMode) {
@@ -13,10 +14,10 @@ export function renderScheduleRow(row, index, scheduleEditMode) {
     ? `<button class="row-delete-btn" data-index="${index}" aria-label="Delete ${row.title} row">×</button>`
     : '';
   return `
-    <div class="row ${row.isAnchor ? 'anchor' : ''}" data-index="${index}">
+    <div class="row ${row.isAnchor ? 'anchor' : ''}" data-index="${index}" role="button" tabindex="0" aria-label="${row.title}, ${row.time}">
       <div class="time">${row.time}</div>
       <div class="activity">
-        <div class="activity-title">${row.title} <span class="tap-hint">›</span>${checklistBadge(row)}</div>
+        <div class="activity-title">${row.title} <span class="tap-hint" aria-hidden="true">›</span>${checklistBadge(row)}</div>
         ${row.note ? `<span class="note">${row.note}</span>` : ''}
       </div>
       ${deleteBtn}

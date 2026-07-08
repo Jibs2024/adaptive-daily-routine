@@ -24,6 +24,11 @@
     --full: #C9A15B;
     --recovery: #7FA391;
     --anchor: #B85C4A;
+    /* Lighter terracotta specifically for anchor-colored TEXT - the base
+       --anchor only hits ~3.6-4.0:1 against these backgrounds (fine for
+       borders/icons at the 3:1 non-text threshold, fails the 4.5:1 normal-
+       text one). This variant clears 4.5:1 on both backgrounds. */
+    --anchor-text: #D07C6A;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
@@ -48,7 +53,7 @@
   .template-btn {
     flex: 1; padding: 10px 8px; border-radius: 10px; border: 1px solid var(--line);
     background: var(--bg-card); color: var(--text-dim); font-size: 12.5px; text-align: center;
-    cursor: pointer; transition: all .2s ease; line-height: 1.3;
+    cursor: pointer; transition: all .2s ease; line-height: 1.3; font-family: inherit;
   }
   .template-btn.active { border-color: var(--full); color: var(--text); background: #23201A; }
 
@@ -71,14 +76,14 @@
     border-bottom: 1px solid var(--line); transition: background .15s ease;
   }
   .row:last-child { border-bottom: none; }
-  .row.anchor .time { color: var(--anchor); font-weight: 700; }
+  .row.anchor .time { color: var(--anchor-text); font-weight: 700; }
   .row.anchor .activity-title { font-weight: 600; }
   .row[data-index] { cursor: pointer; }
   .row[data-index]:active { background: rgba(255,255,255,0.03); }
   .time { flex-shrink: 0; width: 72px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; color: var(--text-dim); padding-top: 1px; }
   .mode-full .time { color: var(--full); }
   .mode-recovery .time { color: var(--recovery); }
-  .mode-full .row.anchor .time, .mode-recovery .row.anchor .time { color: var(--anchor); }
+  .mode-full .row.anchor .time, .mode-recovery .row.anchor .time { color: var(--anchor-text); }
   .activity { font-size: 14px; line-height: 1.4; flex: 1; }
   .activity-title { display: flex; align-items: center; gap: 6px; }
   .tap-hint { font-size: 11px; color: var(--text-dim); opacity: 0.6; }
@@ -198,6 +203,7 @@
   .checklist-item.checked .checklist-cue { color: var(--text-dim); text-decoration: line-through; }
 
   .checklist-remove {
+    position: relative;
     width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--anchor); background: none;
     color: var(--anchor); font-size: 14px; line-height: 1; cursor: pointer; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; padding: 0;
@@ -224,7 +230,7 @@
   }
   .remove-checklist-btn {
     display: block; width: 100%; margin-top: 18px; background: none; border: none;
-    color: var(--anchor); font-size: 13px; cursor: pointer; text-align: center; padding: 8px;
+    color: var(--anchor-text); font-size: 13px; cursor: pointer; text-align: center; padding: 8px;
   }
 
   .sheet-actions { display: flex; gap: 10px; margin-top: 18px; }
@@ -262,6 +268,7 @@
   .template-list-sublabel { font-size: 12px; color: var(--text-dim); text-transform: none; letter-spacing: normal; margin-left: 6px; }
   .template-list-desc { font-size: 12.5px; color: var(--text-dim); margin-top: 3px; }
   .template-delete-btn {
+    position: relative;
     width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--anchor); background: none;
     color: var(--anchor); font-size: 16px; line-height: 1; cursor: pointer; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; padding: 0;
@@ -288,9 +295,10 @@
   .builder-anchor-item {
     display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line);
   }
-  .builder-anchor-time { font-family: 'Barlow Condensed', sans-serif; color: var(--anchor); font-weight: 700; font-size: 14px; width: 72px; flex-shrink: 0; }
+  .builder-anchor-time { font-family: 'Barlow Condensed', sans-serif; color: var(--anchor-text); font-weight: 700; font-size: 14px; width: 72px; flex-shrink: 0; }
   .builder-anchor-label { flex: 1; font-size: 14px; }
   .builder-anchor-remove {
+    position: relative;
     width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--anchor); background: none;
     color: var(--anchor); font-size: 14px; line-height: 1; cursor: pointer; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; padding: 0;
@@ -311,9 +319,23 @@
   }
   .schedule-edit-btn.active { border-color: var(--full); color: var(--text); }
   .row-delete-btn {
+    position: relative;
     width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--anchor); background: none;
     color: var(--anchor); font-size: 14px; line-height: 1; cursor: pointer; flex-shrink: 0;
     align-self: center; display: flex; align-items: center; justify-content: center; padding: 0; margin-left: auto;
+  }
+  .checklist-remove::before,
+  .template-delete-btn::before,
+  .builder-anchor-remove::before,
+  .row-delete-btn::before {
+    /* Invisible 44x44 hit area, centered on the visible (smaller) circle -
+       keeps the compact look while meeting the recommended minimum tap
+       target size. */
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 44px; height: 44px;
+    transform: translate(-50%, -50%);
   }
   .add-row-form { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
   .add-row-form .builder-time-input { width: auto; flex-shrink: 0; margin-bottom: 0; }
@@ -327,7 +349,7 @@
   .danger-zone { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
   .reset-data-btn {
     display: block; width: 100%; background: none; border: 1px solid var(--anchor);
-    color: var(--anchor); padding: 12px; border-radius: 8px; font-size: 13px; cursor: pointer; text-align: center;
+    color: var(--anchor-text); padding: 12px; border-radius: 8px; font-size: 13px; cursor: pointer; text-align: center;
   }
   .confirm-dialog-backdrop {
     position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 40;
@@ -345,11 +367,11 @@
     flex: 1; padding: 11px; border-radius: 999px; font-size: 13px; cursor: pointer; border: 1px solid var(--line);
   }
   .confirm-cancel-btn { background: none; color: var(--text-dim); }
-  .confirm-proceed-btn { background: var(--anchor); color: var(--bg); font-weight: 700; border-color: var(--anchor); }
+  .confirm-proceed-btn { background: var(--anchor-text); color: var(--bg); font-weight: 700; border-color: var(--anchor-text); }
 </style>
 </head>
 <body>
-<section id="onboarding" class="onboarding-overlay" style="display:none;">
+<section id="onboarding" class="onboarding-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Choose a starting template">
   <div class="onboarding-inner">
     <h1 class="onboarding-title">Daily Routine</h1>
     <p class="onboarding-subtitle">One daily mode drives your whole day. Pick a starting template — you can change this anytime.</p>
@@ -357,7 +379,7 @@
   </div>
 </section>
 
-<section id="template-builder" class="onboarding-overlay" style="display:none;">
+<section id="template-builder" class="onboarding-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="New template">
   <div id="builder-step-name" class="builder-step">
     <h1 class="onboarding-title">New Template</h1>
     <p class="onboarding-subtitle">Give it a name.</p>
@@ -385,7 +407,7 @@
 </section>
 
 <div class="confirm-dialog-backdrop" id="confirm-dialog-backdrop">
-  <div class="confirm-dialog">
+  <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
     <div class="confirm-dialog-title" id="confirm-dialog-title">Are you sure?</div>
     <div class="confirm-dialog-text" id="confirm-dialog-text"></div>
     <div class="confirm-dialog-actions">
@@ -444,7 +466,7 @@
 <nav class="bottom-nav" id="bottom-nav"></nav>
 
 <div class="sheet-backdrop" id="backdrop"></div>
-<div class="sheet" id="sheet">
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
   <div class="sheet-handle"></div>
   <div class="sheet-title" id="sheet-title"></div>
   <div class="sheet-time" id="sheet-time"></div>
