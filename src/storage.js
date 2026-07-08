@@ -26,6 +26,13 @@ export function getLast7Days() {
   return days;
 }
 
+export function getAllModeLogEntries() {
+  return Object.keys(localStorage)
+    .filter((key) => key.startsWith(PREFIX))
+    .map((key) => ({ date: key.slice(PREFIX.length), mode: localStorage.getItem(key) }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
 const CHECKLIST_PREFIX = 'checklist:';
 
 function checklistKey(templateId, mode, rowId, scope) {

@@ -5,7 +5,15 @@ import { renderDetailSheet, refreshDetailSheetBody, closeDetailSheet } from './c
 import { renderModeLog } from './components/modeLog.js';
 import { renderNavBar } from './components/navBar.js';
 import { showToast, hideToast } from './components/toast.js';
-import { logMode, getMode, getLast7Days, getChecklistState, setChecklistState } from './storage.js';
+import { shareModeLog } from './components/exportModeLog.js';
+import {
+  logMode,
+  getMode,
+  getLast7Days,
+  getAllModeLogEntries,
+  getChecklistState,
+  setChecklistState,
+} from './storage.js';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js').catch((err) => {
@@ -29,6 +37,7 @@ const sheetEls = {
 const sheetCloseBtn = document.getElementById('sheet-close');
 const sheetEditBtn = document.getElementById('sheet-edit');
 const logDaysEl = document.getElementById('log-days');
+const exportBtn = document.getElementById('export-log');
 const navBarEl = document.getElementById('bottom-nav');
 const viewEls = {
   today: document.getElementById('view-today'),
@@ -119,7 +128,7 @@ function removeItem(groupIdx, itemIdx) {
   refreshSheet();
   renderSchedule(scheduleEl, currentRows, currentMode);
   persistIfNeeded(row);
-  showToast(toastEls, `Removed "${item.name}"`, undoRemove);
+  showToast(toastEls, `Removed "${item.name}"`, 'Undo', undoRemove);
 }
 
 function undoRemove() {
@@ -210,6 +219,7 @@ scheduleEl.addEventListener('click', (e) => {
 sheetEls.backdrop.addEventListener('click', closeSheet);
 sheetCloseBtn.addEventListener('click', closeSheet);
 sheetEditBtn.addEventListener('click', toggleEditMode);
+exportBtn.addEventListener('click', () => shareModeLog(getAllModeLogEntries(), toastEls));
 
 async function init() {
   [templateIndex, modeNotes] = await Promise.all([

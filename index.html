@@ -99,6 +99,11 @@
   .log-day.recovery { border-color: var(--recovery); color: var(--recovery); }
   .log-day .d { font-size: 9px; opacity: 0.7; display: block; margin-bottom: 2px; }
 
+  .export-btn {
+    display: block; width: 100%; margin-top: 14px; background: none; border: 1px solid var(--line);
+    color: var(--text-dim); padding: 10px; border-radius: 8px; font-size: 13px; cursor: pointer; text-align: center;
+  }
+
   .foot { text-align: center; font-size: 11px; color: var(--text-dim); margin-top: 24px; opacity: 0.6; line-height: 1.6; }
 
   /* views + bottom nav */
@@ -224,6 +229,7 @@
     <div class="log-box">
       <strong>Mode log — last 7 days</strong>
       <div class="log-days" id="log-days"></div>
+      <button class="export-btn" id="export-log">Export full history</button>
     </div>
   </section>
 </div>
