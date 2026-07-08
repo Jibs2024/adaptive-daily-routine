@@ -7,7 +7,7 @@
     "full": [
       {
         "time": "9:00pm", "title": "Wind down", "isAnchor": false, "note": "",
-        "detailType": "checklist",
+        "detailType": "checklist", "id": "wind-down", "persistChecklist": "daily",
         "detailContent": [
           {
             "section": null,
@@ -30,7 +30,7 @@
       { "time": "5:33am", "title": "Fajr adhan", "isAnchor": true, "anchorId": "fajr", "note": "" },
       {
         "time": "6:15am", "title": "Exercise", "isAnchor": false, "note": "Phase 1 remedial or Upper Body",
-        "detailType": "checklist", "id": "phase1-remedial", "persistChecklist": true,
+        "detailType": "checklist", "id": "phase1-remedial", "persistChecklist": "indefinite",
         "detailContent": [
           {
             "section": "1. Ankle Mobility (5 min)",

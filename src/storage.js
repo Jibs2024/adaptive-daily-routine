@@ -28,15 +28,16 @@ export function getLast7Days() {
 
 const CHECKLIST_PREFIX = 'checklist:';
 
-function checklistKey(templateId, mode, rowId) {
-  return `${CHECKLIST_PREFIX}${templateId}:${mode}:${rowId}`;
+function checklistKey(templateId, mode, rowId, scope) {
+  const base = `${CHECKLIST_PREFIX}${templateId}:${mode}:${rowId}`;
+  return scope === 'daily' ? `${base}:${new Date().toISOString().slice(0, 10)}` : base;
 }
 
-export function getChecklistState(templateId, mode, rowId) {
-  const raw = localStorage.getItem(checklistKey(templateId, mode, rowId));
+export function getChecklistState(templateId, mode, rowId, scope) {
+  const raw = localStorage.getItem(checklistKey(templateId, mode, rowId, scope));
   return raw ? JSON.parse(raw) : null;
 }
 
-export function setChecklistState(templateId, mode, rowId, checkedFlags) {
-  localStorage.setItem(checklistKey(templateId, mode, rowId), JSON.stringify(checkedFlags));
+export function setChecklistState(templateId, mode, rowId, checkedFlags, scope) {
+  localStorage.setItem(checklistKey(templateId, mode, rowId, scope), JSON.stringify(checkedFlags));
 }

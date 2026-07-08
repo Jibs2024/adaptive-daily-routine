@@ -7,7 +7,7 @@
     "full": [
       {
         "time": "10:00pm", "title": "Wind down", "isAnchor": false, "note": "",
-        "detailType": "checklist",
+        "detailType": "checklist", "id": "wind-down", "persistChecklist": "daily",
         "detailContent": [
           {
             "section": null,
@@ -35,7 +35,7 @@
     "recovery": [
       {
         "time": "9:30pm", "title": "Wind down", "isAnchor": false, "note": "",
-        "detailType": "checklist",
+        "detailType": "checklist", "id": "wind-down", "persistChecklist": "daily",
         "detailContent": [
           {
             "section": null,

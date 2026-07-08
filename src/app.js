@@ -59,7 +59,7 @@ function hydratePersistedChecklists(templateData, templateId) {
   Object.entries(templateData.schedule).forEach(([mode, rows]) => {
     rows.forEach((row) => {
       if (row.detailType !== 'checklist' || !row.persistChecklist) return;
-      const saved = getChecklistState(templateId, mode, row.id);
+      const saved = getChecklistState(templateId, mode, row.id, row.persistChecklist);
       if (!saved) return;
       let i = 0;
       row.detailContent.forEach((group) => {
@@ -95,7 +95,7 @@ function toggleCheck(groupIdx, itemIdx) {
 
   if (row.persistChecklist) {
     const flags = row.detailContent.flatMap((group) => group.items.map((i) => i.checked));
-    setChecklistState(currentTemplateId, currentMode, row.id, flags);
+    setChecklistState(currentTemplateId, currentMode, row.id, flags, row.persistChecklist);
   }
 }
 
