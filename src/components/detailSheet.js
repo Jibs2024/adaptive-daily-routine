@@ -41,9 +41,13 @@ function renderChecklistGroup(group, groupIdx, editState) {
     .map((item, itemIdx) => renderChecklistItem(item, groupIdx, itemIdx, editState.editMode))
     .join('');
   const addRow = editState.editMode ? renderAddRow(groupIdx, editState.addingToGroup === groupIdx) : '';
+  // An emptied-out section (all items removed) shows no header while just
+  // viewing - nothing left to label. In edit mode the header stays, since
+  // it's still needed context for the "+ Add item" affordance below it.
+  const showSectionHeader = group.section && (group.items.length > 0 || editState.editMode);
   return `
     <div class="checklist-group">
-      ${group.section ? `<div class="checklist-section">${group.section}</div>` : ''}
+      ${showSectionHeader ? `<div class="checklist-section">${group.section}</div>` : ''}
       ${items}
       ${addRow}
     </div>
