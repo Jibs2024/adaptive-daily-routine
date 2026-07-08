@@ -13,7 +13,7 @@ export function renderScheduleRow(row, index) {
     <div class="row ${row.isAnchor ? 'anchor' : ''}" data-index="${index}">
       <div class="time">${row.time}</div>
       <div class="activity">
-        <div class="activity-title">${row.title} ${row.detailType ? '<span class="tap-hint">›</span>' : ''}${checklistBadge(row)}</div>
+        <div class="activity-title">${row.title} <span class="tap-hint">›</span>${checklistBadge(row)}</div>
         ${row.note ? `<span class="note">${row.note}</span>` : ''}
       </div>
     </div>

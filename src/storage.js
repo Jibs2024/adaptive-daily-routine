@@ -59,6 +59,26 @@ export function setSelectedTemplateId(id) {
   localStorage.setItem(SELECTED_TEMPLATE_KEY, id);
 }
 
+// Whether a row's detail type has been user-assigned (turned into a checklist,
+// or a checklist removed back to plain). Always indefinite regardless of the
+// row's own persistChecklist scope, since this is a structural decision about
+// the schedule's shape, not day-to-day checklist progress.
+const TYPE_PREFIX = 'checklist-type:';
+
 export function hasAnyPriorUsage() {
-  return Object.keys(localStorage).some((key) => key.startsWith(PREFIX) || key.startsWith(CHECKLIST_PREFIX));
+  return Object.keys(localStorage).some(
+    (key) => key.startsWith(PREFIX) || key.startsWith(CHECKLIST_PREFIX) || key.startsWith(TYPE_PREFIX)
+  );
+}
+
+function typeKey(templateId, mode, rowId) {
+  return `${TYPE_PREFIX}${templateId}:${mode}:${rowId}`;
+}
+
+export function getTypeOverride(templateId, mode, rowId) {
+  return localStorage.getItem(typeKey(templateId, mode, rowId));
+}
+
+export function setTypeOverride(templateId, mode, rowId, value) {
+  localStorage.setItem(typeKey(templateId, mode, rowId), value);
 }

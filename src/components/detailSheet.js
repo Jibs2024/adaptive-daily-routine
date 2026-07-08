@@ -65,6 +65,8 @@ function wireChecklistEvents(bodyEl, editState, handlers) {
       });
       input.focus();
     });
+    const removeChecklistBtn = bodyEl.querySelector('.remove-checklist-btn');
+    if (removeChecklistBtn) removeChecklistBtn.addEventListener('click', handlers.onRemoveChecklist);
   } else {
     bodyEl.querySelectorAll('.checklist-item').forEach((el) => {
       el.addEventListener('click', () => handlers.onToggleCheck(Number(el.dataset.group), Number(el.dataset.idx)));
@@ -74,10 +76,20 @@ function wireChecklistEvents(bodyEl, editState, handlers) {
 
 function renderBody(bodyEl, row, editState, handlers) {
   if (row.detailType === 'checklist') {
-    bodyEl.innerHTML = row.detailContent
+    const groupsHtml = row.detailContent
       .map((group, groupIdx) => renderChecklistGroup(group, groupIdx, editState))
       .join('');
+    const removeChecklistHtml = editState.editMode
+      ? `<button class="remove-checklist-btn">Remove checklist from this task</button>`
+      : '';
+    bodyEl.innerHTML = groupsHtml + removeChecklistHtml;
     wireChecklistEvents(bodyEl, editState, handlers);
+  } else if (!row.detailType) {
+    bodyEl.innerHTML = `
+      <p class="empty-detail-text">This task doesn't have any detail content yet.</p>
+      <button class="assign-checklist-btn">+ Add a checklist</button>
+    `;
+    bodyEl.querySelector('.assign-checklist-btn').addEventListener('click', handlers.onAssignChecklist);
   } else {
     bodyEl.innerHTML = row.detailContent
       .split('\n\n')

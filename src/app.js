@@ -17,6 +17,8 @@ import {
   getSelectedTemplateId,
   setSelectedTemplateId,
   hasAnyPriorUsage,
+  getTypeOverride,
+  setTypeOverride,
 } from './storage.js';
 
 if ('serviceWorker' in navigator) {
@@ -80,12 +82,29 @@ function selectView(view) {
   updateView();
 }
 
-function hydratePersistedChecklists(templateData, templateId) {
+function hydrateRows(templateData, templateId) {
   Object.entries(templateData.schedule).forEach(([mode, rows]) => {
     rows.forEach((row) => {
-      if (row.detailType !== 'checklist' || !row.persistChecklist) return;
-      const saved = getChecklistState(templateId, mode, row.id, row.persistChecklist);
-      if (saved) row.detailContent = saved;
+      // 1. Apply any user type-assignment first (always indefinite - a
+      // structural decision about the schedule's shape, not day-to-day
+      // checklist progress).
+      const typeOverride = getTypeOverride(templateId, mode, row.id);
+      if (typeOverride === 'checklist' && row.detailType !== 'checklist') {
+        row.detailType = 'checklist';
+        row.detailContent = [{ section: null, items: [] }];
+        row.persistChecklist = row.persistChecklist || 'indefinite';
+      } else if (typeOverride === 'none') {
+        row.detailType = undefined;
+        row.detailContent = undefined;
+        row.persistChecklist = undefined;
+      }
+
+      // 2. Then layer the checklist's own content/checked-state persistence
+      // on top, for whatever the resulting detailType turns out to be.
+      if (row.detailType === 'checklist' && row.persistChecklist) {
+        const saved = getChecklistState(templateId, mode, row.id, row.persistChecklist);
+        if (saved) row.detailContent = saved;
+      }
     });
   });
 }
@@ -94,7 +113,7 @@ async function loadTemplate(id) {
   if (templateCache.has(id)) return templateCache.get(id);
   const entry = templateIndex.find((t) => t.id === id);
   const data = await fetch(`src/templates/${entry.file}`).then((res) => res.json());
-  hydratePersistedChecklists(data, id);
+  hydrateRows(data, id);
   templateCache.set(id, data);
   return data;
 }
@@ -170,16 +189,47 @@ function toggleEditMode() {
   sheetEditBtn.classList.toggle('active', editMode);
 }
 
+function assignChecklist() {
+  const row = currentRows[openRowIndex];
+  row.detailType = 'checklist';
+  row.detailContent = [{ section: null, items: [] }];
+  row.persistChecklist = row.persistChecklist || 'indefinite';
+  setTypeOverride(currentTemplateId, currentMode, row.id, 'checklist');
+
+  editMode = true;
+  addingToGroup = 0;
+  renderDetailSheet(sheetEls, row, { editMode, addingToGroup }, handlers);
+  sheetEditBtn.style.display = '';
+  sheetEditBtn.textContent = 'Done';
+  sheetEditBtn.classList.add('active');
+  renderSchedule(scheduleEl, currentRows, currentMode);
+}
+
+function removeChecklist() {
+  const row = currentRows[openRowIndex];
+  row.detailType = undefined;
+  row.detailContent = undefined;
+  row.persistChecklist = undefined;
+  setTypeOverride(currentTemplateId, currentMode, row.id, 'none');
+
+  editMode = false;
+  addingToGroup = null;
+  renderDetailSheet(sheetEls, row, { editMode, addingToGroup }, handlers);
+  sheetEditBtn.style.display = 'none';
+  renderSchedule(scheduleEl, currentRows, currentMode);
+}
+
 const handlers = {
   onToggleCheck: toggleCheck,
   onRemoveItem: removeItem,
   onAddItem: addItem,
   onStartAdd: startAdd,
+  onAssignChecklist: assignChecklist,
+  onRemoveChecklist: removeChecklist,
 };
 
 function openRow(index) {
   const row = currentRows[index];
-  if (!row.detailType) return;
   openRowIndex = index;
   editMode = false;
   addingToGroup = null;

@@ -19,15 +19,15 @@
           }
         ]
       },
-      { "time": "9:15pm", "title": "First sleep begins", "isAnchor": false, "note": "~4h05m block" },
+      { "time": "9:15pm", "title": "First sleep begins", "isAnchor": false, "note": "~4h05m block", "id": "first-sleep" },
       {
-        "time": "1:22am", "title": "Tahajjud", "isAnchor": true, "anchorId": "tahajjud", "note": "",
+        "time": "1:22am", "title": "Tahajjud", "isAnchor": true, "anchorId": "tahajjud", "id": "tahajjud", "note": "",
         "detailType": "reference",
         "detailContent": "Suggested dhikr: SubhanAllah x33, Alhamdulillah x33, Allahu Akbar x34.\n\nDua focus tonight: gratitude and ease in the day ahead. Keep it as long or short as capacity allows — quality over duration."
       },
-      { "time": "2:00am", "title": "Second sleep", "isAnchor": false, "note": "~3h block" },
-      { "time": "5:00am", "title": "Wake, wudu", "isAnchor": false, "note": "Warm water + morning must-haves" },
-      { "time": "5:33am", "title": "Fajr adhan", "isAnchor": true, "anchorId": "fajr", "note": "" },
+      { "time": "2:00am", "title": "Second sleep", "isAnchor": false, "note": "~3h block", "id": "second-sleep" },
+      { "time": "5:00am", "title": "Wake, wudu", "isAnchor": false, "note": "Warm water + morning must-haves", "id": "wake-wudu" },
+      { "time": "5:33am", "title": "Fajr adhan", "isAnchor": true, "anchorId": "fajr", "id": "fajr", "note": "" },
       {
         "time": "6:15am", "title": "Exercise", "isAnchor": false, "note": "Phase 1 remedial or Upper Body",
         "detailType": "checklist", "id": "phase1-remedial", "persistChecklist": "indefinite",
@@ -88,37 +88,37 @@
         ]
       },
       {
-        "time": "7:00am", "title": "Shower, breakfast", "isAnchor": false, "note": "",
+        "time": "7:00am", "title": "Shower, breakfast", "isAnchor": false, "note": "", "id": "shower-breakfast",
         "detailType": "plan",
         "detailContent": "Today's planned breakfast: overnight oats with banana + ginger tea.\n\nAfter shower: apply scalp oil, then daily moisturiser."
       },
-      { "time": "8:00am", "title": "Work — site", "isAnchor": false, "note": "" },
-      { "time": "12:00pm", "title": "Dhuhr + lunch", "isAnchor": true, "anchorId": "dhuhr", "note": "Gut-support staples" },
-      { "time": "2:41pm", "title": "Asr", "isAnchor": true, "anchorId": "asr", "note": "" },
-      { "time": "5:00pm", "title": "Maghrib", "isAnchor": true, "anchorId": "maghrib", "note": "" },
-      { "time": "6:22pm", "title": "Isha", "isAnchor": true, "anchorId": "isha", "note": "" }
+      { "time": "8:00am", "title": "Work — site", "isAnchor": false, "note": "", "id": "work" },
+      { "time": "12:00pm", "title": "Dhuhr + lunch", "isAnchor": true, "anchorId": "dhuhr", "id": "dhuhr", "note": "Gut-support staples" },
+      { "time": "2:41pm", "title": "Asr", "isAnchor": true, "anchorId": "asr", "id": "asr", "note": "" },
+      { "time": "5:00pm", "title": "Maghrib", "isAnchor": true, "anchorId": "maghrib", "id": "maghrib", "note": "" },
+      { "time": "6:22pm", "title": "Isha", "isAnchor": true, "anchorId": "isha", "id": "isha", "note": "" }
     ],
     "recovery": [
-      { "time": "9:15pm", "title": "First sleep begins", "isAnchor": false, "note": "" },
+      { "time": "9:15pm", "title": "First sleep begins", "isAnchor": false, "note": "", "id": "first-sleep" },
       {
-        "time": "1:22am", "title": "Tahajjud", "isAnchor": true, "anchorId": "tahajjud", "note": "",
+        "time": "1:22am", "title": "Tahajjud", "isAnchor": true, "anchorId": "tahajjud", "id": "tahajjud", "note": "",
         "detailType": "reference",
         "detailContent": "Shortened tonight: even 2 rakah and a short dua counts in full.\n\nDhikr focus: SubhanAllah x10, Alhamdulillah x10, Allahu Akbar x10 — brief is fine."
       },
-      { "time": "1:45am", "title": "Second sleep", "isAnchor": false, "note": "Protect this fully" },
-      { "time": "5:00am", "title": "Wake, wudu", "isAnchor": false, "note": "" },
-      { "time": "5:33am", "title": "Fajr adhan", "isAnchor": true, "anchorId": "fajr", "note": "" },
-      { "time": "6:15am", "title": "Light movement only", "isAnchor": false, "note": "Walk, stretch, mobility — skip training" },
+      { "time": "1:45am", "title": "Second sleep", "isAnchor": false, "note": "Protect this fully", "id": "second-sleep" },
+      { "time": "5:00am", "title": "Wake, wudu", "isAnchor": false, "note": "", "id": "wake-wudu" },
+      { "time": "5:33am", "title": "Fajr adhan", "isAnchor": true, "anchorId": "fajr", "id": "fajr", "note": "" },
+      { "time": "6:15am", "title": "Light movement only", "isAnchor": false, "note": "Walk, stretch, mobility — skip training", "id": "light-movement" },
       {
-        "time": "6:45am", "title": "Shower, easy breakfast", "isAnchor": false, "note": "",
+        "time": "6:45am", "title": "Shower, easy breakfast", "isAnchor": false, "note": "", "id": "shower-breakfast",
         "detailType": "plan",
         "detailContent": "Today's planned breakfast: plain rice porridge + peppermint tea.\n\nAfter shower: gentle routine only — moisturiser, skip actives."
       },
-      { "time": "8:00am", "title": "Work — pace yourself", "isAnchor": false, "note": "" },
-      { "time": "12:00pm", "title": "Dhuhr + lunch", "isAnchor": true, "anchorId": "dhuhr", "note": "Gentler staples" },
-      { "time": "2:41pm", "title": "Asr", "isAnchor": true, "anchorId": "asr", "note": "" },
-      { "time": "5:00pm", "title": "Maghrib", "isAnchor": true, "anchorId": "maghrib", "note": "" },
-      { "time": "6:22pm", "title": "Isha", "isAnchor": true, "anchorId": "isha", "note": "" }
+      { "time": "8:00am", "title": "Work — pace yourself", "isAnchor": false, "note": "", "id": "work" },
+      { "time": "12:00pm", "title": "Dhuhr + lunch", "isAnchor": true, "anchorId": "dhuhr", "id": "dhuhr", "note": "Gentler staples" },
+      { "time": "2:41pm", "title": "Asr", "isAnchor": true, "anchorId": "asr", "id": "asr", "note": "" },
+      { "time": "5:00pm", "title": "Maghrib", "isAnchor": true, "anchorId": "maghrib", "id": "maghrib", "note": "" },
+      { "time": "6:22pm", "title": "Isha", "isAnchor": true, "anchorId": "isha", "id": "isha", "note": "" }
     ]
   }
 }
