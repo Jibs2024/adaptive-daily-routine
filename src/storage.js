@@ -48,3 +48,17 @@ export function getChecklistState(templateId, mode, rowId, scope) {
 export function setChecklistState(templateId, mode, rowId, detailContent, scope) {
   localStorage.setItem(checklistKey(templateId, mode, rowId, scope), JSON.stringify(detailContent));
 }
+
+const SELECTED_TEMPLATE_KEY = 'selectedTemplateId';
+
+export function getSelectedTemplateId() {
+  return localStorage.getItem(SELECTED_TEMPLATE_KEY);
+}
+
+export function setSelectedTemplateId(id) {
+  localStorage.setItem(SELECTED_TEMPLATE_KEY, id);
+}
+
+export function hasAnyPriorUsage() {
+  return Object.keys(localStorage).some((key) => key.startsWith(PREFIX) || key.startsWith(CHECKLIST_PREFIX));
+}

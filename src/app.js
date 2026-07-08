@@ -6,6 +6,7 @@ import { renderModeLog } from './components/modeLog.js';
 import { renderNavBar } from './components/navBar.js';
 import { showToast, hideToast } from './components/toast.js';
 import { shareModeLog } from './components/exportModeLog.js';
+import { renderOnboarding } from './components/onboarding.js';
 import {
   logMode,
   getMode,
@@ -13,6 +14,9 @@ import {
   getAllModeLogEntries,
   getChecklistState,
   setChecklistState,
+  getSelectedTemplateId,
+  setSelectedTemplateId,
+  hasAnyPriorUsage,
 } from './storage.js';
 
 if ('serviceWorker' in navigator) {
@@ -48,6 +52,8 @@ const toastEls = {
   message: document.getElementById('toast-message'),
   undoBtn: document.getElementById('toast-undo'),
 };
+const onboardingEl = document.getElementById('onboarding');
+const onboardingOptionsEl = document.getElementById('onboarding-options');
 
 let templateIndex = [];
 let modeNotes = {};
@@ -201,6 +207,7 @@ async function render() {
 
 async function selectTemplate(id) {
   currentTemplateId = id;
+  setSelectedTemplateId(id);
   await render();
 }
 
@@ -221,18 +228,41 @@ sheetCloseBtn.addEventListener('click', closeSheet);
 sheetEditBtn.addEventListener('click', toggleEditMode);
 exportBtn.addEventListener('click', () => shareModeLog(getAllModeLogEntries(), toastEls));
 
+async function completeOnboarding(id) {
+  setSelectedTemplateId(id);
+  currentTemplateId = id;
+  onboardingEl.style.display = 'none';
+  updateView();
+  await render();
+}
+
 async function init() {
   [templateIndex, modeNotes] = await Promise.all([
     fetch('src/templates/index.json').then((res) => res.json()),
     fetch('src/config/mode-notes.json').then((res) => res.json()),
   ]);
-  currentTemplateId = templateIndex[0].id;
 
   const loggedToday = getMode(new Date());
   if (loggedToday) currentMode = loggedToday;
 
-  updateView();
-  await render();
+  const selected = getSelectedTemplateId();
+  const validSelected = selected && templateIndex.some((t) => t.id === selected);
+
+  if (validSelected) {
+    currentTemplateId = selected;
+    updateView();
+    await render();
+  } else if (hasAnyPriorUsage()) {
+    // Existing user from before template-selection persistence existed — adopt
+    // the default silently rather than surprising them with an onboarding gate.
+    currentTemplateId = templateIndex[0].id;
+    setSelectedTemplateId(currentTemplateId);
+    updateView();
+    await render();
+  } else {
+    renderOnboarding(onboardingOptionsEl, templateIndex, completeOnboarding);
+    onboardingEl.style.display = 'flex';
+  }
 }
 
 init();

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'adaptive-routine-v12';
+const CACHE_NAME = 'adaptive-routine-v13';
 
 const APP_SHELL = [
   './',
@@ -16,6 +16,7 @@ const APP_SHELL = [
   './src/components/navBar.js',
   './src/components/toast.js',
   './src/components/exportModeLog.js',
+  './src/components/onboarding.js',
   './src/config/mode-notes.json',
   './src/templates/index.json',
   './src/templates/prayer-anchored.json',

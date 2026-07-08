@@ -3,12 +3,14 @@
     "id": "prayer-anchored",
     "file": "prayer-anchored.json",
     "label": "Prayer-Anchored",
-    "sublabel": "(Muslim)"
+    "sublabel": "(Muslim)",
+    "description": "Anchored to Tahajjud & Fajr"
   },
   {
     "id": "generic",
     "file": "generic.json",
     "label": "Sleep-Anchored",
-    "sublabel": "(Generic)"
+    "sublabel": "(Generic)",
+    "description": "Sleep/wake anchored — no religious content"
   }
 ]
