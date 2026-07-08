@@ -25,3 +25,18 @@ export function getLast7Days() {
   }
   return days;
 }
+
+const CHECKLIST_PREFIX = 'checklist:';
+
+function checklistKey(templateId, mode, rowId) {
+  return `${CHECKLIST_PREFIX}${templateId}:${mode}:${rowId}`;
+}
+
+export function getChecklistState(templateId, mode, rowId) {
+  const raw = localStorage.getItem(checklistKey(templateId, mode, rowId));
+  return raw ? JSON.parse(raw) : null;
+}
+
+export function setChecklistState(templateId, mode, rowId, checkedFlags) {
+  localStorage.setItem(checklistKey(templateId, mode, rowId), JSON.stringify(checkedFlags));
+}

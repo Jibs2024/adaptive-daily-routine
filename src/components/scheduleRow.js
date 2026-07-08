@@ -3,8 +3,9 @@ function checklistBadge(row) {
   const allItems = row.detailContent.flatMap((group) => group.items);
   const total = allItems.length;
   const done = allItems.filter((item) => item.checked).length;
-  if (done === 0 || done < total) return '';
-  return `<span class="check-badge">✓ ${done}/${total}</span>`;
+  if (done === 0) return '';
+  const check = done === total ? '✓ ' : '';
+  return `<span class="check-badge">${check}${done}/${total}</span>`;
 }
 
 export function renderScheduleRow(row, index) {

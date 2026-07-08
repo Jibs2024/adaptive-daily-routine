@@ -4,7 +4,7 @@ import { renderSchedule } from './components/scheduleRow.js';
 import { renderDetailSheet, refreshDetailSheetBody, closeDetailSheet } from './components/detailSheet.js';
 import { renderModeLog } from './components/modeLog.js';
 import { renderNavBar } from './components/navBar.js';
-import { logMode, getMode, getLast7Days } from './storage.js';
+import { logMode, getMode, getLast7Days, getChecklistState, setChecklistState } from './storage.js';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js').catch((err) => {
@@ -55,10 +55,28 @@ function selectView(view) {
   updateView();
 }
 
+function hydratePersistedChecklists(templateData, templateId) {
+  Object.entries(templateData.schedule).forEach(([mode, rows]) => {
+    rows.forEach((row) => {
+      if (row.detailType !== 'checklist' || !row.persistChecklist) return;
+      const saved = getChecklistState(templateId, mode, row.id);
+      if (!saved) return;
+      let i = 0;
+      row.detailContent.forEach((group) => {
+        group.items.forEach((item) => {
+          if (i < saved.length) item.checked = saved[i];
+          i++;
+        });
+      });
+    });
+  });
+}
+
 async function loadTemplate(id) {
   if (templateCache.has(id)) return templateCache.get(id);
   const entry = templateIndex.find((t) => t.id === id);
   const data = await fetch(`src/templates/${entry.file}`).then((res) => res.json());
+  hydratePersistedChecklists(data, id);
   templateCache.set(id, data);
   return data;
 }
@@ -74,6 +92,11 @@ function toggleCheck(groupIdx, itemIdx) {
   item.checked = !item.checked;
   refreshDetailSheetBody(sheetEls, row, toggleCheck);
   renderSchedule(scheduleEl, currentRows, currentMode);
+
+  if (row.persistChecklist) {
+    const flags = row.detailContent.flatMap((group) => group.items.map((i) => i.checked));
+    setChecklistState(currentTemplateId, currentMode, row.id, flags);
+  }
 }
 
 function openRow(index) {
