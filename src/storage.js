@@ -1,11 +1,37 @@
 const PREFIX = 'modelog:';
 
+// Shared write guard: localStorage.setItem can throw (quota exceeded, private
+// browsing with storage disabled, etc). Callers on funnel paths that matter
+// to the user (checklist/template saves) check the return value and surface
+// a visible toast rather than losing the edit silently.
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (err) {
+    console.error(`Storage write failed for "${key}":`, err);
+    return false;
+  }
+}
+
+// Shared read guard: a corrupted or unexpectedly-shaped value under a key
+// (e.g. from a future schema change, or a previous crash mid-write) would
+// otherwise throw and take down the whole render path with it.
+function safeParse(raw, key) {
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error(`Storage read failed for "${key}":`, err);
+    return null;
+  }
+}
+
 function dateKey(date) {
   return PREFIX + date.toISOString().slice(0, 10);
 }
 
 export function logMode(mode, date = new Date()) {
-  localStorage.setItem(dateKey(date), mode);
+  return safeSetItem(dateKey(date), mode);
 }
 
 export function getMode(date) {
@@ -41,12 +67,13 @@ function checklistKey(templateId, mode, rowId, scope) {
 }
 
 export function getChecklistState(templateId, mode, rowId, scope) {
-  const raw = localStorage.getItem(checklistKey(templateId, mode, rowId, scope));
-  return raw ? JSON.parse(raw) : null;
+  const key = checklistKey(templateId, mode, rowId, scope);
+  const raw = localStorage.getItem(key);
+  return raw ? safeParse(raw, key) : null;
 }
 
 export function setChecklistState(templateId, mode, rowId, detailContent, scope) {
-  localStorage.setItem(checklistKey(templateId, mode, rowId, scope), JSON.stringify(detailContent));
+  return safeSetItem(checklistKey(templateId, mode, rowId, scope), JSON.stringify(detailContent));
 }
 
 // Daily-reset checklist keys (Wind Down, Exercise's weekday-variant state,
@@ -55,22 +82,30 @@ export function setChecklistState(templateId, mode, rowId, detailContent, scope)
 // app's actual tracked history (the whole point of tracking mode is
 // long-term pattern spotting, and the export feature depends on all of it).
 export function cleanupOldDailyKeys(maxAgeDays = 90) {
-  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-  const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000;
-  let removed = 0;
+  // Runs unconditionally on every app boot, before anything else has
+  // rendered - a failure here (corrupted key, storage API unavailable)
+  // must not block the rest of init().
+  try {
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+    const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000;
+    let removed = 0;
 
-  Object.keys(localStorage).forEach((key) => {
-    if (!key.startsWith(CHECKLIST_PREFIX)) return;
-    const lastPart = key.slice(key.lastIndexOf(':') + 1);
-    if (!datePattern.test(lastPart)) return;
-    const keyTime = new Date(`${lastPart}T00:00:00Z`).getTime();
-    if (!Number.isNaN(keyTime) && keyTime < cutoff) {
-      localStorage.removeItem(key);
-      removed++;
-    }
-  });
+    Object.keys(localStorage).forEach((key) => {
+      if (!key.startsWith(CHECKLIST_PREFIX)) return;
+      const lastPart = key.slice(key.lastIndexOf(':') + 1);
+      if (!datePattern.test(lastPart)) return;
+      const keyTime = new Date(`${lastPart}T00:00:00Z`).getTime();
+      if (!Number.isNaN(keyTime) && keyTime < cutoff) {
+        localStorage.removeItem(key);
+        removed++;
+      }
+    });
 
-  return removed;
+    return removed;
+  } catch (err) {
+    console.error('Storage cleanup failed:', err);
+    return 0;
+  }
 }
 
 const SELECTED_TEMPLATE_KEY = 'selectedTemplateId';
@@ -80,7 +115,7 @@ export function getSelectedTemplateId() {
 }
 
 export function setSelectedTemplateId(id) {
-  localStorage.setItem(SELECTED_TEMPLATE_KEY, id);
+  return safeSetItem(SELECTED_TEMPLATE_KEY, id);
 }
 
 // Whether a checklist has been user-attached to a row (independent of
@@ -121,7 +156,7 @@ export function getTypeOverride(templateId, mode, rowId) {
 }
 
 export function setTypeOverride(templateId, mode, rowId, value) {
-  localStorage.setItem(typeKey(templateId, mode, rowId), value);
+  return safeSetItem(typeKey(templateId, mode, rowId), value);
 }
 
 function contentKey(templateId, mode, rowId) {
@@ -133,7 +168,7 @@ export function getRowText(templateId, mode, rowId) {
 }
 
 export function setRowText(templateId, mode, rowId, text) {
-  localStorage.setItem(contentKey(templateId, mode, rowId), text);
+  return safeSetItem(contentKey(templateId, mode, rowId), text);
 }
 
 export function getCustomTemplateIds() {
@@ -143,12 +178,13 @@ export function getCustomTemplateIds() {
 }
 
 export function getCustomTemplate(id) {
-  const raw = localStorage.getItem(CUSTOM_TEMPLATE_PREFIX + id);
-  return raw ? JSON.parse(raw) : null;
+  const key = CUSTOM_TEMPLATE_PREFIX + id;
+  const raw = localStorage.getItem(key);
+  return raw ? safeParse(raw, key) : null;
 }
 
 export function saveCustomTemplate(id, data) {
-  localStorage.setItem(CUSTOM_TEMPLATE_PREFIX + id, JSON.stringify(data));
+  return safeSetItem(CUSTOM_TEMPLATE_PREFIX + id, JSON.stringify(data));
 }
 
 export function deleteCustomTemplate(id) {

@@ -35,7 +35,9 @@ export async function shareModeLog(entries, toastEls) {
     try {
       await navigator.share({ title: 'Mode Log', text });
     } catch (err) {
-      if (err.name !== 'AbortError') console.error('Share failed:', err);
+      if (err.name === 'AbortError') return;
+      console.error('Share failed:', err);
+      showToast(toastEls, 'Could not share — try again', null, null);
     }
   } else {
     try {

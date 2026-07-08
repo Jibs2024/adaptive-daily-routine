@@ -78,6 +78,11 @@ const onboardingOptionsEl = document.getElementById('onboarding-options');
 
 const templatesListEl = document.getElementById('templates-list');
 const newTemplateBtn = document.getElementById('new-template-btn');
+const resetDataBtn = document.getElementById('reset-data-btn');
+const confirmDialogBackdrop = document.getElementById('confirm-dialog-backdrop');
+const confirmDialogText = document.getElementById('confirm-dialog-text');
+const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+const confirmProceedBtn = document.getElementById('confirm-proceed-btn');
 const templateBuilderEl = document.getElementById('template-builder');
 const builderStepName = document.getElementById('builder-step-name');
 const builderStepAnchors = document.getElementById('builder-step-anchors');
@@ -224,7 +229,10 @@ async function loadTemplate(id) {
 function persistCustomTemplateIfNeeded() {
   if (!isCurrentTemplateCustom()) return;
   const data = templateCache.get(currentTemplateId);
-  if (data) saveCustomTemplate(currentTemplateId, data);
+  if (!data) return;
+  if (!saveCustomTemplate(currentTemplateId, data)) {
+    showToast(toastEls, 'Could not save — try again', null, null);
+  }
 }
 
 function persistChecklistIfNeeded(row) {
@@ -233,7 +241,8 @@ function persistChecklistIfNeeded(row) {
     return;
   }
   if (row.checklist && row.checklist.persistChecklist) {
-    setChecklistState(currentTemplateId, currentMode, row.id, row.checklist.content, row.checklist.persistChecklist);
+    const ok = setChecklistState(currentTemplateId, currentMode, row.id, row.checklist.content, row.checklist.persistChecklist);
+    if (!ok) showToast(toastEls, 'Could not save — try again', null, null);
   }
 }
 
@@ -243,8 +252,8 @@ function saveStaticContent(text) {
   row.detailContent = text;
   if (isCurrentTemplateCustom()) {
     persistCustomTemplateIfNeeded();
-  } else {
-    setRowText(currentTemplateId, currentMode, row.id, text);
+  } else if (!setRowText(currentTemplateId, currentMode, row.id, text)) {
+    showToast(toastEls, 'Could not save — try again', null, null);
   }
 }
 
@@ -334,8 +343,8 @@ function assignChecklist() {
   row.checklist = { persistChecklist: 'indefinite', content: [{ section: null, items: [] }] };
   if (isCurrentTemplateCustom()) {
     persistCustomTemplateIfNeeded();
-  } else {
-    setTypeOverride(currentTemplateId, currentMode, row.id, 'checklist');
+  } else if (!setTypeOverride(currentTemplateId, currentMode, row.id, 'checklist')) {
+    showToast(toastEls, 'Could not save — try again', null, null);
   }
 
   editMode = true;
@@ -350,8 +359,8 @@ function removeChecklist() {
   row.checklist = undefined;
   if (isCurrentTemplateCustom()) {
     persistCustomTemplateIfNeeded();
-  } else {
-    setTypeOverride(currentTemplateId, currentMode, row.id, 'none');
+  } else if (!setTypeOverride(currentTemplateId, currentMode, row.id, 'none')) {
+    showToast(toastEls, 'Could not save — try again', null, null);
   }
   addingToGroup = null;
   if (!hasStaticContent(row)) editMode = false;
@@ -478,26 +487,34 @@ async function selectTemplateFromList(id) {
 }
 
 function deleteTemplate(id) {
-  const data = getCustomTemplate(id);
-  if (!data) return;
-  const wasActive = currentTemplateId === id;
-  deleteCustomTemplate(id);
-  templateCache.delete(id);
-  buildMergedTemplateIndex();
-  renderTemplatesTab();
+  try {
+    const data = getCustomTemplate(id);
+    if (!data) return;
+    const wasActive = currentTemplateId === id;
+    deleteCustomTemplate(id);
+    templateCache.delete(id);
+    buildMergedTemplateIndex();
+    renderTemplatesTab();
 
-  if (wasActive) {
-    const fallback = staticTemplateIndex[0].id;
-    currentTemplateId = fallback;
-    setSelectedTemplateId(fallback);
-    render();
+    if (wasActive) {
+      const fallback = staticTemplateIndex[0].id;
+      currentTemplateId = fallback;
+      setSelectedTemplateId(fallback);
+      render();
+    }
+
+    showToast(toastEls, `Deleted "${data.name}"`, 'Undo', () => undoDeleteTemplate(id, data, wasActive));
+  } catch (err) {
+    console.error('Template deletion failed:', err);
+    showToast(toastEls, 'Could not delete template — try again', null, null);
   }
-
-  showToast(toastEls, `Deleted "${data.name}"`, 'Undo', () => undoDeleteTemplate(id, data, wasActive));
 }
 
 function undoDeleteTemplate(id, data, wasActive) {
-  saveCustomTemplate(id, data);
+  if (!saveCustomTemplate(id, data)) {
+    showToast(toastEls, 'Could not restore template — try again', null, null);
+    return;
+  }
   templateCache.set(id, data);
   buildMergedTemplateIndex();
   renderTemplatesTab();
@@ -507,6 +524,51 @@ function undoDeleteTemplate(id, data, wasActive) {
     render();
   }
 }
+
+// ---- Generic confirm dialog ----
+
+let pendingConfirmAction = null;
+
+function showConfirmDialog(text, onConfirm) {
+  confirmDialogText.textContent = text;
+  pendingConfirmAction = onConfirm;
+  confirmDialogBackdrop.classList.add('open');
+}
+
+function closeConfirmDialog() {
+  confirmDialogBackdrop.classList.remove('open');
+  pendingConfirmAction = null;
+}
+
+confirmCancelBtn.addEventListener('click', closeConfirmDialog);
+confirmDialogBackdrop.addEventListener('click', (e) => {
+  if (e.target === confirmDialogBackdrop) closeConfirmDialog();
+});
+confirmProceedBtn.addEventListener('click', () => {
+  const action = pendingConfirmAction;
+  closeConfirmDialog();
+  if (action) action();
+});
+
+// ---- Reset app data ----
+
+function resetAppData() {
+  try {
+    localStorage.clear();
+  } catch (err) {
+    console.error('Reset failed:', err);
+    showToast(toastEls, 'Could not reset — try again', null, null);
+    return;
+  }
+  window.location.reload();
+}
+
+resetDataBtn.addEventListener('click', () => {
+  showConfirmDialog(
+    'This permanently deletes every template, checklist, and mode-log entry stored on this device. This cannot be undone.',
+    resetAppData
+  );
+});
 
 // ---- New Template builder flow ----
 
@@ -665,10 +727,16 @@ async function completeOnboarding(id) {
 async function init() {
   cleanupOldDailyKeys();
 
-  [staticTemplateIndex, modeNotes] = await Promise.all([
-    fetch('src/templates/index.json').then((res) => res.json()),
-    fetch('src/config/mode-notes.json').then((res) => res.json()),
-  ]);
+  try {
+    [staticTemplateIndex, modeNotes] = await Promise.all([
+      fetch('src/templates/index.json').then((res) => res.json()),
+      fetch('src/config/mode-notes.json').then((res) => res.json()),
+    ]);
+  } catch (err) {
+    console.error('Startup failed:', err);
+    scheduleEl.innerHTML = '<div class="render-error">Could not load the app. Check your connection and reload.</div>';
+    return;
+  }
   buildMergedTemplateIndex();
 
   const loggedToday = getMode(new Date());
