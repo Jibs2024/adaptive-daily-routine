@@ -1,6 +1,6 @@
 function checklistBadge(row) {
   if (row.detailType !== 'checklist') return '';
-  const allItems = row.detailContent.flatMap((group) => group.items);
+  const allItems = row.detailContent.flatMap((group) => (group && Array.isArray(group.items) ? group.items : []));
   const total = allItems.length;
   const done = allItems.filter((item) => item.checked).length;
   if (done === 0) return '';

@@ -82,6 +82,10 @@ function selectView(view) {
   updateView();
 }
 
+function isValidChecklistContent(data) {
+  return Array.isArray(data) && data.every((group) => group && Array.isArray(group.items));
+}
+
 function hydrateRows(templateData, templateId) {
   Object.entries(templateData.schedule).forEach(([mode, rows]) => {
     rows.forEach((row) => {
@@ -103,7 +107,7 @@ function hydrateRows(templateData, templateId) {
       // on top, for whatever the resulting detailType turns out to be.
       if (row.detailType === 'checklist' && row.persistChecklist) {
         const saved = getChecklistState(templateId, mode, row.id, row.persistChecklist);
-        if (saved) row.detailContent = saved;
+        if (saved && isValidChecklistContent(saved)) row.detailContent = saved;
       }
     });
   });
@@ -243,16 +247,21 @@ function openRow(index) {
 async function render() {
   closeSheet();
 
-  const template = await loadTemplate(currentTemplateId);
-  currentRows = template.schedule[currentMode];
+  try {
+    const template = await loadTemplate(currentTemplateId);
+    currentRows = template.schedule[currentMode];
 
-  renderTemplatePicker(templatePickerEl, templateIndex, currentTemplateId, selectTemplate);
-  renderModeToggle(modeToggleEl, currentMode, selectMode);
+    renderTemplatePicker(templatePickerEl, templateIndex, currentTemplateId, selectTemplate);
+    renderModeToggle(modeToggleEl, currentMode, selectMode);
 
-  subtitleEl.textContent = template.subtitle;
-  modeNoteEl.textContent = modeNotes[currentMode];
-  renderSchedule(scheduleEl, currentRows, currentMode);
-  renderModeLog(logDaysEl, getLast7Days());
+    subtitleEl.textContent = template.subtitle;
+    modeNoteEl.textContent = modeNotes[currentMode];
+    renderSchedule(scheduleEl, currentRows, currentMode);
+    renderModeLog(logDaysEl, getLast7Days());
+  } catch (err) {
+    console.error('Render failed:', err);
+    scheduleEl.innerHTML = '<div class="render-error">Something went wrong loading this schedule. Try switching modes or reloading the app.</div>';
+  }
 }
 
 async function selectTemplate(id) {
