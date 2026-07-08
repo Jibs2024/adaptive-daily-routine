@@ -4,6 +4,7 @@ import { renderSchedule } from './components/scheduleRow.js';
 import { renderDetailSheet, refreshDetailSheetBody, closeDetailSheet } from './components/detailSheet.js';
 import { renderModeLog } from './components/modeLog.js';
 import { renderNavBar } from './components/navBar.js';
+import { showToast, hideToast } from './components/toast.js';
 import { logMode, getMode, getLast7Days, getChecklistState, setChecklistState } from './storage.js';
 
 if ('serviceWorker' in navigator) {
@@ -26,11 +27,17 @@ const sheetEls = {
   body: document.getElementById('sheet-body'),
 };
 const sheetCloseBtn = document.getElementById('sheet-close');
+const sheetEditBtn = document.getElementById('sheet-edit');
 const logDaysEl = document.getElementById('log-days');
 const navBarEl = document.getElementById('bottom-nav');
 const viewEls = {
   today: document.getElementById('view-today'),
   history: document.getElementById('view-history'),
+};
+const toastEls = {
+  el: document.getElementById('toast'),
+  message: document.getElementById('toast-message'),
+  undoBtn: document.getElementById('toast-undo'),
 };
 
 let templateIndex = [];
@@ -42,6 +49,9 @@ let currentMode = 'full';
 let currentRows = [];
 let openRowIndex = null;
 let currentView = 'today';
+let editMode = false;
+let addingToGroup = null;
+let lastRemoved = null;
 
 function updateView() {
   Object.entries(viewEls).forEach(([id, el]) => {
@@ -60,14 +70,7 @@ function hydratePersistedChecklists(templateData, templateId) {
     rows.forEach((row) => {
       if (row.detailType !== 'checklist' || !row.persistChecklist) return;
       const saved = getChecklistState(templateId, mode, row.id, row.persistChecklist);
-      if (!saved) return;
-      let i = 0;
-      row.detailContent.forEach((group) => {
-        group.items.forEach((item) => {
-          if (i < saved.length) item.checked = saved[i];
-          i++;
-        });
-      });
+      if (saved) row.detailContent = saved;
     });
   });
 }
@@ -81,29 +84,95 @@ async function loadTemplate(id) {
   return data;
 }
 
+function persistIfNeeded(row) {
+  if (row.persistChecklist) {
+    setChecklistState(currentTemplateId, currentMode, row.id, row.detailContent, row.persistChecklist);
+  }
+}
+
 function closeSheet() {
   closeDetailSheet(sheetEls);
   openRowIndex = null;
+  editMode = false;
+  addingToGroup = null;
+  hideToast(toastEls);
+}
+
+function refreshSheet() {
+  const row = currentRows[openRowIndex];
+  refreshDetailSheetBody(sheetEls, row, { editMode, addingToGroup }, handlers);
 }
 
 function toggleCheck(groupIdx, itemIdx) {
   const row = currentRows[openRowIndex];
   const item = row.detailContent[groupIdx].items[itemIdx];
   item.checked = !item.checked;
-  refreshDetailSheetBody(sheetEls, row, toggleCheck);
+  refreshSheet();
   renderSchedule(scheduleEl, currentRows, currentMode);
-
-  if (row.persistChecklist) {
-    const flags = row.detailContent.flatMap((group) => group.items.map((i) => i.checked));
-    setChecklistState(currentTemplateId, currentMode, row.id, flags, row.persistChecklist);
-  }
+  persistIfNeeded(row);
 }
+
+function removeItem(groupIdx, itemIdx) {
+  const row = currentRows[openRowIndex];
+  const [item] = row.detailContent[groupIdx].items.splice(itemIdx, 1);
+  lastRemoved = { row, groupIdx, itemIdx, item };
+  refreshSheet();
+  renderSchedule(scheduleEl, currentRows, currentMode);
+  persistIfNeeded(row);
+  showToast(toastEls, `Removed "${item.name}"`, undoRemove);
+}
+
+function undoRemove() {
+  if (!lastRemoved) return;
+  const { row, groupIdx, itemIdx, item } = lastRemoved;
+  row.detailContent[groupIdx].items.splice(itemIdx, 0, item);
+  lastRemoved = null;
+  if (currentRows[openRowIndex] === row) refreshSheet();
+  renderSchedule(scheduleEl, currentRows, currentMode);
+  persistIfNeeded(row);
+}
+
+function startAdd(groupIdx) {
+  addingToGroup = groupIdx;
+  refreshSheet();
+}
+
+function addItem(groupIdx, name) {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  const row = currentRows[openRowIndex];
+  row.detailContent[groupIdx].items.push({ name: trimmed, checked: false });
+  refreshSheet();
+  renderSchedule(scheduleEl, currentRows, currentMode);
+  persistIfNeeded(row);
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  addingToGroup = null;
+  refreshSheet();
+  sheetEditBtn.textContent = editMode ? 'Done' : 'Edit';
+  sheetEditBtn.classList.toggle('active', editMode);
+}
+
+const handlers = {
+  onToggleCheck: toggleCheck,
+  onRemoveItem: removeItem,
+  onAddItem: addItem,
+  onStartAdd: startAdd,
+};
 
 function openRow(index) {
   const row = currentRows[index];
   if (!row.detailType) return;
   openRowIndex = index;
-  renderDetailSheet(sheetEls, row, toggleCheck);
+  editMode = false;
+  addingToGroup = null;
+  hideToast(toastEls);
+  renderDetailSheet(sheetEls, row, { editMode, addingToGroup }, handlers);
+  sheetEditBtn.style.display = row.detailType === 'checklist' ? '' : 'none';
+  sheetEditBtn.textContent = 'Edit';
+  sheetEditBtn.classList.remove('active');
 }
 
 async function render() {
@@ -140,6 +209,7 @@ scheduleEl.addEventListener('click', (e) => {
 
 sheetEls.backdrop.addEventListener('click', closeSheet);
 sheetCloseBtn.addEventListener('click', closeSheet);
+sheetEditBtn.addEventListener('click', toggleEditMode);
 
 async function init() {
   [templateIndex, modeNotes] = await Promise.all([

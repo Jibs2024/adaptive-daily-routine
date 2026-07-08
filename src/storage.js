@@ -38,6 +38,6 @@ export function getChecklistState(templateId, mode, rowId, scope) {
   return raw ? JSON.parse(raw) : null;
 }
 
-export function setChecklistState(templateId, mode, rowId, checkedFlags, scope) {
-  localStorage.setItem(checklistKey(templateId, mode, rowId, scope), JSON.stringify(checkedFlags));
+export function setChecklistState(templateId, mode, rowId, detailContent, scope) {
+  localStorage.setItem(checklistKey(templateId, mode, rowId, scope), JSON.stringify(detailContent));
 }

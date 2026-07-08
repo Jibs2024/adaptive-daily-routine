@@ -156,10 +156,45 @@
   .checklist-item.checked .checklist-dose,
   .checklist-item.checked .checklist-cue { color: var(--text-dim); text-decoration: line-through; }
 
-  .close-btn {
-    display: block; margin: 18px auto 0; background: none; border: 1px solid var(--line);
+  .checklist-remove {
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--anchor); background: none;
+    color: var(--anchor); font-size: 14px; line-height: 1; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+
+  .add-item-btn {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    color: var(--text-dim); font-size: 13px; padding: 10px 0; cursor: pointer;
+  }
+  .add-item-row { display: flex; gap: 8px; padding: 8px 0; align-items: center; }
+  .add-item-input {
+    flex: 1; background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 10px; color: var(--text); font-size: 14px; font-family: inherit;
+  }
+  .add-item-confirm {
+    background: var(--full); color: #1A1408; border: none; border-radius: 8px;
+    padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+
+  .sheet-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .close-btn, .edit-btn {
+    flex: 1; background: none; border: 1px solid var(--line);
     color: var(--text-dim); padding: 9px 22px; border-radius: 999px; font-size: 13px; cursor: pointer;
   }
+  .edit-btn.active { border-color: var(--full); color: var(--text); }
+
+  .toast {
+    position: fixed; left: 14px; right: 14px; max-width: 452px; margin: 0 auto;
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+    z-index: 20;
+  }
+  .toast.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .toast-message { font-size: 13px; color: var(--text); }
+  .toast-undo { background: none; border: none; color: var(--full); font-weight: 700; font-size: 13px; cursor: pointer; padding: 4px 8px; }
 </style>
 </head>
 <body>
@@ -201,7 +236,15 @@
   <div class="sheet-title" id="sheet-title"></div>
   <div class="sheet-time" id="sheet-time"></div>
   <div class="sheet-body" id="sheet-body"></div>
-  <button class="close-btn" id="sheet-close">Close</button>
+  <div class="sheet-actions">
+    <button class="edit-btn" id="sheet-edit" style="display:none;">Edit</button>
+    <button class="close-btn" id="sheet-close">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span class="toast-message" id="toast-message"></span>
+  <button class="toast-undo" id="toast-undo">Undo</button>
 </div>
 
 <script type="module" src="src/app.js"></script>
