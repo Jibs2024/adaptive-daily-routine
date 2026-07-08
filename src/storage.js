@@ -71,13 +71,20 @@ const TYPE_PREFIX = 'checklist-type:';
 // customization, not something that should reset overnight.
 const CONTENT_PREFIX = 'content:';
 
+// Custom, user-created templates. Unlike built-in templates (static files,
+// edits layered on top via the prefixes above), a custom template has no
+// static original to diff against - the whole object lives in one key here,
+// and any edit just re-saves the whole thing.
+const CUSTOM_TEMPLATE_PREFIX = 'customTemplate:';
+
 export function hasAnyPriorUsage() {
   return Object.keys(localStorage).some(
     (key) =>
       key.startsWith(PREFIX) ||
       key.startsWith(CHECKLIST_PREFIX) ||
       key.startsWith(TYPE_PREFIX) ||
-      key.startsWith(CONTENT_PREFIX)
+      key.startsWith(CONTENT_PREFIX) ||
+      key.startsWith(CUSTOM_TEMPLATE_PREFIX)
   );
 }
 
@@ -103,4 +110,23 @@ export function getRowText(templateId, mode, rowId) {
 
 export function setRowText(templateId, mode, rowId, text) {
   localStorage.setItem(contentKey(templateId, mode, rowId), text);
+}
+
+export function getCustomTemplateIds() {
+  return Object.keys(localStorage)
+    .filter((key) => key.startsWith(CUSTOM_TEMPLATE_PREFIX))
+    .map((key) => key.slice(CUSTOM_TEMPLATE_PREFIX.length));
+}
+
+export function getCustomTemplate(id) {
+  const raw = localStorage.getItem(CUSTOM_TEMPLATE_PREFIX + id);
+  return raw ? JSON.parse(raw) : null;
+}
+
+export function saveCustomTemplate(id, data) {
+  localStorage.setItem(CUSTOM_TEMPLATE_PREFIX + id, JSON.stringify(data));
+}
+
+export function deleteCustomTemplate(id) {
+  localStorage.removeItem(CUSTOM_TEMPLATE_PREFIX + id);
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'adaptive-routine-v17';
+const CACHE_NAME = 'adaptive-routine-v18';
 
 const APP_SHELL = [
   './',
@@ -8,6 +8,7 @@ const APP_SHELL = [
   './icons/icon-512.png',
   './src/app.js',
   './src/storage.js',
+  './src/timeUtils.js',
   './src/components/modeToggle.js',
   './src/components/templatePicker.js',
   './src/components/scheduleRow.js',
@@ -17,6 +18,8 @@ const APP_SHELL = [
   './src/components/toast.js',
   './src/components/exportModeLog.js',
   './src/components/onboarding.js',
+  './src/components/templatesList.js',
+  './src/components/templateBuilder.js',
   './src/config/mode-notes.json',
   './src/templates/index.json',
   './src/templates/prayer-anchored.json',

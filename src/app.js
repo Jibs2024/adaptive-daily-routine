@@ -12,6 +12,9 @@ import { renderNavBar } from './components/navBar.js';
 import { showToast, hideToast } from './components/toast.js';
 import { shareModeLog } from './components/exportModeLog.js';
 import { renderOnboarding } from './components/onboarding.js';
+import { renderTemplatesList } from './components/templatesList.js';
+import { renderAnchorList } from './components/templateBuilder.js';
+import { parse24hTime, formatDisplayTime, insertRowByTime } from './timeUtils.js';
 import {
   logMode,
   getMode,
@@ -26,6 +29,10 @@ import {
   setTypeOverride,
   getRowText,
   setRowText,
+  getCustomTemplateIds,
+  getCustomTemplate,
+  saveCustomTemplate,
+  deleteCustomTemplate,
 } from './storage.js';
 
 if ('serviceWorker' in navigator) {
@@ -39,6 +46,9 @@ const modeToggleEl = document.getElementById('mode-toggle');
 const modeNoteEl = document.getElementById('mode-note');
 const subtitleEl = document.getElementById('subtitle');
 const scheduleEl = document.getElementById('schedule');
+const scheduleToolsEl = document.getElementById('schedule-tools');
+const scheduleEditBtn = document.getElementById('schedule-edit-btn');
+const addRowContainerEl = document.getElementById('add-row-container');
 
 const sheetEls = {
   backdrop: document.getElementById('backdrop'),
@@ -55,6 +65,7 @@ const navBarEl = document.getElementById('bottom-nav');
 const viewEls = {
   today: document.getElementById('view-today'),
   history: document.getElementById('view-history'),
+  templates: document.getElementById('view-templates'),
 };
 const toastEls = {
   el: document.getElementById('toast'),
@@ -64,6 +75,17 @@ const toastEls = {
 const onboardingEl = document.getElementById('onboarding');
 const onboardingOptionsEl = document.getElementById('onboarding-options');
 
+const templatesListEl = document.getElementById('templates-list');
+const newTemplateBtn = document.getElementById('new-template-btn');
+const templateBuilderEl = document.getElementById('template-builder');
+const builderStepName = document.getElementById('builder-step-name');
+const builderStepAnchors = document.getElementById('builder-step-anchors');
+const builderNameInput = document.getElementById('builder-name-input');
+const builderAnchorListEl = document.getElementById('builder-anchor-list');
+const builderAnchorLabelInput = document.getElementById('builder-anchor-label');
+const builderAnchorTimeInput = document.getElementById('builder-anchor-time');
+
+let staticTemplateIndex = [];
 let templateIndex = [];
 let modeNotes = {};
 const templateCache = new Map();
@@ -76,6 +98,10 @@ let currentView = 'today';
 let editMode = false;
 let addingToGroup = null;
 let lastRemoved = null;
+let scheduleEditMode = false;
+let lastDeletedRow = null;
+let builderName = '';
+let builderAnchors = [];
 
 function updateView() {
   Object.entries(viewEls).forEach(([id, el]) => {
@@ -86,6 +112,7 @@ function updateView() {
 
 function selectView(view) {
   currentView = view;
+  if (view === 'templates') renderTemplatesTab();
   updateView();
 }
 
@@ -95,6 +122,26 @@ function isValidChecklistContent(data) {
 
 function hasStaticContent(row) {
   return row.detailType === 'reference' || row.detailType === 'plan';
+}
+
+function isCurrentTemplateCustom() {
+  const entry = templateIndex.find((t) => t.id === currentTemplateId);
+  return !!(entry && entry.isCustom);
+}
+
+function buildMergedTemplateIndex() {
+  const customEntries = getCustomTemplateIds().map((id) => {
+    const data = getCustomTemplate(id);
+    return {
+      id,
+      file: null,
+      label: data ? data.name : id,
+      sublabel: '',
+      description: data ? data.subtitle : '',
+      isCustom: true,
+    };
+  });
+  templateIndex = [...staticTemplateIndex, ...customEntries];
 }
 
 function hydrateRows(templateData, templateId) {
@@ -128,13 +175,28 @@ function hydrateRows(templateData, templateId) {
 async function loadTemplate(id) {
   if (templateCache.has(id)) return templateCache.get(id);
   const entry = templateIndex.find((t) => t.id === id);
-  const data = await fetch(`src/templates/${entry.file}`).then((res) => res.json());
-  hydrateRows(data, id);
+  let data;
+  if (entry && entry.isCustom) {
+    data = getCustomTemplate(id);
+  } else {
+    data = await fetch(`src/templates/${entry.file}`).then((res) => res.json());
+    hydrateRows(data, id);
+  }
   templateCache.set(id, data);
   return data;
 }
 
+function persistCustomTemplateIfNeeded() {
+  if (!isCurrentTemplateCustom()) return;
+  const data = templateCache.get(currentTemplateId);
+  if (data) saveCustomTemplate(currentTemplateId, data);
+}
+
 function persistChecklistIfNeeded(row) {
+  if (isCurrentTemplateCustom()) {
+    persistCustomTemplateIfNeeded();
+    return;
+  }
   if (row.checklist && row.checklist.persistChecklist) {
     setChecklistState(currentTemplateId, currentMode, row.id, row.checklist.content, row.checklist.persistChecklist);
   }
@@ -144,7 +206,11 @@ function saveStaticContent(text) {
   const row = currentRows[openRowIndex];
   if (!row || !hasStaticContent(row)) return;
   row.detailContent = text;
-  setRowText(currentTemplateId, currentMode, row.id, text);
+  if (isCurrentTemplateCustom()) {
+    persistCustomTemplateIfNeeded();
+  } else {
+    setRowText(currentTemplateId, currentMode, row.id, text);
+  }
 }
 
 function flushPendingEdit() {
@@ -173,7 +239,7 @@ function toggleCheck(groupIdx, itemIdx) {
   const item = row.checklist.content[groupIdx].items[itemIdx];
   item.checked = !item.checked;
   refreshSheet();
-  renderSchedule(scheduleEl, currentRows, currentMode);
+  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
   persistChecklistIfNeeded(row);
 }
 
@@ -182,7 +248,7 @@ function removeItem(groupIdx, itemIdx) {
   const [item] = row.checklist.content[groupIdx].items.splice(itemIdx, 1);
   lastRemoved = { row, groupIdx, itemIdx, item };
   refreshSheet();
-  renderSchedule(scheduleEl, currentRows, currentMode);
+  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
   persistChecklistIfNeeded(row);
   showToast(toastEls, `Removed "${item.name}"`, 'Undo', undoRemove);
 }
@@ -193,7 +259,7 @@ function undoRemove() {
   row.checklist.content[groupIdx].items.splice(itemIdx, 0, item);
   lastRemoved = null;
   if (currentRows[openRowIndex] === row) refreshSheet();
-  renderSchedule(scheduleEl, currentRows, currentMode);
+  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
   persistChecklistIfNeeded(row);
 }
 
@@ -208,7 +274,7 @@ function addItem(groupIdx, name) {
   const row = currentRows[openRowIndex];
   row.checklist.content[groupIdx].items.push({ name: trimmed, checked: false });
   refreshSheet();
-  renderSchedule(scheduleEl, currentRows, currentMode);
+  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
   persistChecklistIfNeeded(row);
 }
 
@@ -231,25 +297,33 @@ function toggleEditMode() {
 function assignChecklist() {
   const row = currentRows[openRowIndex];
   row.checklist = { persistChecklist: 'indefinite', content: [{ section: null, items: [] }] };
-  setTypeOverride(currentTemplateId, currentMode, row.id, 'checklist');
+  if (isCurrentTemplateCustom()) {
+    persistCustomTemplateIfNeeded();
+  } else {
+    setTypeOverride(currentTemplateId, currentMode, row.id, 'checklist');
+  }
 
   editMode = true;
   addingToGroup = 0;
   renderDetailSheet(sheetEls, row, { editMode, addingToGroup }, handlers);
   updateEditButton(row);
-  renderSchedule(scheduleEl, currentRows, currentMode);
+  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
 }
 
 function removeChecklist() {
   const row = currentRows[openRowIndex];
   row.checklist = undefined;
-  setTypeOverride(currentTemplateId, currentMode, row.id, 'none');
+  if (isCurrentTemplateCustom()) {
+    persistCustomTemplateIfNeeded();
+  } else {
+    setTypeOverride(currentTemplateId, currentMode, row.id, 'none');
+  }
   addingToGroup = null;
   if (!hasStaticContent(row)) editMode = false;
 
   renderDetailSheet(sheetEls, row, { editMode, addingToGroup }, handlers);
   updateEditButton(row);
-  renderSchedule(scheduleEl, currentRows, currentMode);
+  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
 }
 
 const handlers = {
@@ -273,8 +347,209 @@ function openRow(index) {
   updateEditButton(row);
 }
 
+function slugify(str) {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function generateTemplateId(name) {
+  return `custom-${slugify(name) || 'template'}-${Date.now().toString(36)}`;
+}
+
+function generateRowId(title) {
+  return `${slugify(title) || 'row'}-${Date.now().toString(36)}-${Math.floor(Math.random() * 1000)}`;
+}
+
+// ---- Schedule editing (custom templates only) ----
+
+function updateScheduleTools() {
+  const custom = isCurrentTemplateCustom();
+  scheduleToolsEl.style.display = custom ? '' : 'none';
+  if (!custom) scheduleEditMode = false;
+  scheduleEditBtn.textContent = scheduleEditMode ? 'Done' : 'Edit Schedule';
+  scheduleEditBtn.classList.toggle('active', scheduleEditMode);
+}
+
+function renderAddRowForm() {
+  if (!scheduleEditMode || !isCurrentTemplateCustom()) {
+    addRowContainerEl.innerHTML = '';
+    return;
+  }
+  addRowContainerEl.innerHTML = `
+    <div class="add-row-form">
+      <input type="time" id="add-row-time" class="builder-time-input" aria-label="New row time">
+      <input type="text" id="add-row-title" class="builder-text-input" placeholder="Task name" aria-label="New row title">
+      <button class="add-row-confirm-btn" id="add-row-confirm">Add</button>
+    </div>
+  `;
+  document.getElementById('add-row-confirm').addEventListener('click', () => {
+    const timeInput = document.getElementById('add-row-time');
+    const titleInput = document.getElementById('add-row-title');
+    const title = titleInput.value.trim();
+    if (!timeInput.value || !title) return;
+    const newRow = {
+      time: formatDisplayTime(parse24hTime(timeInput.value)),
+      title,
+      isAnchor: false,
+      note: '',
+      id: generateRowId(title),
+    };
+    insertRowByTime(currentRows, newRow);
+    persistCustomTemplateIfNeeded();
+    renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+    renderAddRowForm();
+  });
+}
+
+function toggleScheduleEditMode() {
+  scheduleEditMode = !scheduleEditMode;
+  updateScheduleTools();
+  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+  renderAddRowForm();
+}
+
+function deleteRow(index) {
+  if (!isCurrentTemplateCustom()) return;
+  const [removed] = currentRows.splice(index, 1);
+  lastDeletedRow = { index, row: removed };
+  persistCustomTemplateIfNeeded();
+  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+  showToast(toastEls, `Removed "${removed.title}"`, 'Undo', undoDeleteRow);
+}
+
+function undoDeleteRow() {
+  if (!lastDeletedRow) return;
+  currentRows.splice(lastDeletedRow.index, 0, lastDeletedRow.row);
+  lastDeletedRow = null;
+  persistCustomTemplateIfNeeded();
+  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+}
+
+// ---- Templates tab ----
+
+function renderTemplatesTab() {
+  renderTemplatesList(templatesListEl, templateIndex, currentTemplateId, {
+    onSelect: selectTemplateFromList,
+    onDelete: deleteTemplate,
+  });
+}
+
+async function selectTemplateFromList(id) {
+  await selectTemplate(id);
+  currentView = 'today';
+  updateView();
+}
+
+function deleteTemplate(id) {
+  const data = getCustomTemplate(id);
+  if (!data) return;
+  const wasActive = currentTemplateId === id;
+  deleteCustomTemplate(id);
+  templateCache.delete(id);
+  buildMergedTemplateIndex();
+  renderTemplatesTab();
+
+  if (wasActive) {
+    const fallback = staticTemplateIndex[0].id;
+    currentTemplateId = fallback;
+    setSelectedTemplateId(fallback);
+    render();
+  }
+
+  showToast(toastEls, `Deleted "${data.name}"`, 'Undo', () => undoDeleteTemplate(id, data, wasActive));
+}
+
+function undoDeleteTemplate(id, data, wasActive) {
+  saveCustomTemplate(id, data);
+  templateCache.set(id, data);
+  buildMergedTemplateIndex();
+  renderTemplatesTab();
+  if (wasActive) {
+    currentTemplateId = id;
+    setSelectedTemplateId(id);
+    render();
+  }
+}
+
+// ---- New Template builder flow ----
+
+function openTemplateBuilder() {
+  builderName = '';
+  builderAnchors = [];
+  builderNameInput.value = '';
+  builderAnchorLabelInput.value = '';
+  builderAnchorTimeInput.value = '';
+  builderStepName.style.display = '';
+  builderStepAnchors.style.display = 'none';
+  renderAnchorList(builderAnchorListEl, builderAnchors, removeBuilderAnchor);
+  templateBuilderEl.style.display = 'flex';
+}
+
+function closeTemplateBuilder() {
+  templateBuilderEl.style.display = 'none';
+}
+
+function goToAnchorStep() {
+  const name = builderNameInput.value.trim();
+  if (!name) return;
+  builderName = name;
+  builderStepName.style.display = 'none';
+  builderStepAnchors.style.display = '';
+}
+
+function addBuilderAnchor() {
+  const label = builderAnchorLabelInput.value.trim();
+  const time24 = builderAnchorTimeInput.value;
+  if (!label || !time24) return;
+  builderAnchors.push({ label, displayTime: formatDisplayTime(parse24hTime(time24)) });
+  renderAnchorList(builderAnchorListEl, builderAnchors, removeBuilderAnchor);
+  builderAnchorLabelInput.value = '';
+  builderAnchorLabelInput.focus();
+}
+
+function removeBuilderAnchor(idx) {
+  builderAnchors.splice(idx, 1);
+  renderAnchorList(builderAnchorListEl, builderAnchors, removeBuilderAnchor);
+}
+
+async function createCustomTemplate(name, anchors) {
+  const freshGeneric = await fetch('src/templates/generic.json').then((res) => res.json());
+  const cloned = JSON.parse(JSON.stringify(freshGeneric));
+  const id = generateTemplateId(name);
+
+  ['full', 'recovery'].forEach((mode) => {
+    anchors.forEach((a) => {
+      const row = { time: a.displayTime, title: a.label, isAnchor: true, note: '', id: generateRowId(a.label) };
+      insertRowByTime(cloned.schedule[mode], row);
+    });
+  });
+
+  const customTemplate = { id, name, subtitle: 'Custom template', schedule: cloned.schedule };
+  saveCustomTemplate(id, customTemplate);
+  return id;
+}
+
+async function saveNewTemplate() {
+  try {
+    const id = await createCustomTemplate(builderName, builderAnchors);
+    buildMergedTemplateIndex();
+    closeTemplateBuilder();
+    currentTemplateId = id;
+    setSelectedTemplateId(id);
+    currentView = 'today';
+    updateView();
+    await render();
+  } catch (err) {
+    console.error('Template creation failed:', err);
+    showToast(toastEls, 'Could not create template — try again', null, null);
+  }
+}
+
 async function render() {
   closeSheet();
+  scheduleEditMode = false;
 
   try {
     const template = await loadTemplate(currentTemplateId);
@@ -285,7 +560,9 @@ async function render() {
 
     subtitleEl.textContent = template.subtitle;
     modeNoteEl.textContent = modeNotes[currentMode];
-    renderSchedule(scheduleEl, currentRows, currentMode);
+    updateScheduleTools();
+    renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+    renderAddRowForm();
     renderModeLog(logDaysEl, getLast7Days());
   } catch (err) {
     console.error('Render failed:', err);
@@ -306,6 +583,11 @@ async function selectMode(mode) {
 }
 
 scheduleEl.addEventListener('click', (e) => {
+  const deleteBtn = e.target.closest('.row-delete-btn');
+  if (deleteBtn) {
+    deleteRow(Number(deleteBtn.dataset.index));
+    return;
+  }
   const rowEl = e.target.closest('.row[data-index]');
   if (!rowEl) return;
   openRow(Number(rowEl.dataset.index));
@@ -315,6 +597,14 @@ sheetEls.backdrop.addEventListener('click', closeSheet);
 sheetCloseBtn.addEventListener('click', closeSheet);
 sheetEditBtn.addEventListener('click', toggleEditMode);
 exportBtn.addEventListener('click', () => shareModeLog(getAllModeLogEntries(), toastEls));
+scheduleEditBtn.addEventListener('click', toggleScheduleEditMode);
+
+newTemplateBtn.addEventListener('click', openTemplateBuilder);
+document.getElementById('builder-cancel-name').addEventListener('click', closeTemplateBuilder);
+document.getElementById('builder-cancel-anchors').addEventListener('click', closeTemplateBuilder);
+document.getElementById('builder-name-next').addEventListener('click', goToAnchorStep);
+document.getElementById('builder-anchor-add-btn').addEventListener('click', addBuilderAnchor);
+document.getElementById('builder-save-btn').addEventListener('click', saveNewTemplate);
 
 async function completeOnboarding(id) {
   setSelectedTemplateId(id);
@@ -325,10 +615,11 @@ async function completeOnboarding(id) {
 }
 
 async function init() {
-  [templateIndex, modeNotes] = await Promise.all([
+  [staticTemplateIndex, modeNotes] = await Promise.all([
     fetch('src/templates/index.json').then((res) => res.json()),
     fetch('src/config/mode-notes.json').then((res) => res.json()),
   ]);
+  buildMergedTemplateIndex();
 
   const loggedToday = getMode(new Date());
   if (loggedToday) currentMode = loggedToday;
@@ -343,7 +634,7 @@ async function init() {
   } else if (hasAnyPriorUsage()) {
     // Existing user from before template-selection persistence existed — adopt
     // the default silently rather than surprising them with an onboarding gate.
-    currentTemplateId = templateIndex[0].id;
+    currentTemplateId = staticTemplateIndex[0].id;
     setSelectedTemplateId(currentTemplateId);
     updateView();
     await render();

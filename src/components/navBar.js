@@ -1,6 +1,7 @@
 const VIEWS = [
   { id: 'today', label: 'Today' },
   { id: 'history', label: 'History' },
+  { id: 'templates', label: 'Templates' },
 ];
 
 export function renderNavBar(container, currentView, onSelect) {

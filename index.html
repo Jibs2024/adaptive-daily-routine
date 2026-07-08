@@ -246,6 +246,106 @@
   .toast.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
   .toast-message { font-size: 13px; color: var(--text); }
   .toast-undo { background: none; border: none; color: var(--full); font-weight: 700; font-size: 13px; cursor: pointer; padding: 4px 8px; }
+
+  /* templates tab */
+  .templates-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .template-list-item {
+    display: flex; align-items: center; gap: 10px; padding: 14px 16px;
+    background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; cursor: pointer;
+  }
+  .template-list-item.active { border-color: var(--full); }
+  .template-list-info { flex: 1; min-width: 0; }
+  .template-list-name {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 16px; text-transform: uppercase;
+    letter-spacing: 0.3px; color: var(--text);
+  }
+  .template-list-sublabel { font-size: 12px; color: var(--text-dim); text-transform: none; letter-spacing: normal; margin-left: 6px; }
+  .template-list-desc { font-size: 12.5px; color: var(--text-dim); margin-top: 3px; }
+  .template-delete-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--anchor); background: none;
+    color: var(--anchor); font-size: 16px; line-height: 1; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .new-template-btn {
+    display: block; width: 100%; background: var(--bg-card); border: 1px dashed var(--line);
+    color: var(--text); padding: 14px; border-radius: 12px; font-size: 14px; cursor: pointer; text-align: center;
+  }
+
+  /* template builder overlay */
+  .builder-step { max-width: 420px; width: 100%; text-align: left; }
+  .builder-text-input, .builder-time-input {
+    width: 100%; background: var(--bg-card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 14px; color: var(--text); font-size: 16px; font-family: inherit; margin-bottom: 14px;
+  }
+  .builder-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .builder-cancel-btn, .builder-next-btn, .builder-save-btn {
+    flex: 1; padding: 11px; border-radius: 999px; font-size: 13px; cursor: pointer; border: 1px solid var(--line);
+  }
+  .builder-cancel-btn { background: none; color: var(--text-dim); }
+  .builder-next-btn, .builder-save-btn { background: var(--full); color: #1A1408; font-weight: 700; border-color: var(--full); }
+  .builder-anchor-list { margin-bottom: 14px; max-height: 240px; overflow-y: auto; }
+  .builder-empty-text { color: var(--text-dim); font-size: 13px; margin-bottom: 14px; }
+  .builder-anchor-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line);
+  }
+  .builder-anchor-time { font-family: 'Barlow Condensed', sans-serif; color: var(--anchor); font-weight: 700; font-size: 14px; width: 72px; flex-shrink: 0; }
+  .builder-anchor-label { flex: 1; font-size: 14px; }
+  .builder-anchor-remove {
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--anchor); background: none;
+    color: var(--anchor); font-size: 14px; line-height: 1; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .builder-anchor-add { display: flex; gap: 8px; margin-bottom: 18px; align-items: center; }
+  .builder-anchor-add .builder-time-input { width: auto; flex-shrink: 0; margin-bottom: 0; }
+  .builder-anchor-add .builder-text-input { flex: 1; margin-bottom: 0; }
+  .builder-add-anchor-btn {
+    background: var(--full); color: #1A1408; border: none; border-radius: 8px;
+    padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+  }
+
+  /* schedule editing (custom templates only) */
+  .schedule-tools { margin-bottom: 10px; text-align: right; }
+  .schedule-edit-btn {
+    background: none; border: 1px solid var(--line); color: var(--text-dim);
+    padding: 7px 14px; border-radius: 999px; font-size: 12px; cursor: pointer;
+  }
+  .schedule-edit-btn.active { border-color: var(--full); color: var(--text); }
+  .row-delete-btn {
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--anchor); background: none;
+    color: var(--anchor); font-size: 14px; line-height: 1; cursor: pointer; flex-shrink: 0;
+    align-self: center; display: flex; align-items: center; justify-content: center; padding: 0; margin-left: auto;
+  }
+  .add-row-form { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
+  .add-row-form .builder-time-input { width: auto; flex-shrink: 0; margin-bottom: 0; }
+  .add-row-form .builder-text-input { flex: 1; margin-bottom: 0; }
+  .add-row-confirm-btn {
+    background: var(--full); color: #1A1408; border: none; border-radius: 8px;
+    padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+  }
+
+  /* reset app data */
+  .danger-zone { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .reset-data-btn {
+    display: block; width: 100%; background: none; border: 1px solid var(--anchor);
+    color: var(--anchor); padding: 12px; border-radius: 8px; font-size: 13px; cursor: pointer; text-align: center;
+  }
+  .confirm-dialog-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 40;
+    display: none; align-items: center; justify-content: center; padding: 24px;
+  }
+  .confirm-dialog-backdrop.open { display: flex; }
+  .confirm-dialog {
+    background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 20px; max-width: 340px; width: 100%; text-align: center;
+  }
+  .confirm-dialog-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; text-transform: uppercase; margin-bottom: 8px; }
+  .confirm-dialog-text { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 18px; }
+  .confirm-dialog-actions { display: flex; gap: 10px; }
+  .confirm-cancel-btn, .confirm-proceed-btn {
+    flex: 1; padding: 11px; border-radius: 999px; font-size: 13px; cursor: pointer; border: 1px solid var(--line);
+  }
+  .confirm-cancel-btn { background: none; color: var(--text-dim); }
+  .confirm-proceed-btn { background: var(--anchor); color: var(--bg); font-weight: 700; border-color: var(--anchor); }
 </style>
 </head>
 <body>
@@ -256,6 +356,44 @@
     <div class="onboarding-options" id="onboarding-options"></div>
   </div>
 </section>
+
+<section id="template-builder" class="onboarding-overlay" style="display:none;">
+  <div id="builder-step-name" class="builder-step">
+    <h1 class="onboarding-title">New Template</h1>
+    <p class="onboarding-subtitle">Give it a name.</p>
+    <input type="text" id="builder-name-input" class="builder-text-input" placeholder="e.g. Medication Schedule" aria-label="Template name">
+    <div class="builder-actions">
+      <button class="builder-cancel-btn" id="builder-cancel-name">Cancel</button>
+      <button class="builder-next-btn" id="builder-name-next">Next</button>
+    </div>
+  </div>
+
+  <div id="builder-step-anchors" class="builder-step" style="display:none;">
+    <h1 class="onboarding-title">Add Anchors</h1>
+    <p class="onboarding-subtitle">Fixed times for this template — meds, appointments, anything that doesn't move. You can add more later.</p>
+    <div class="builder-anchor-list" id="builder-anchor-list"></div>
+    <div class="builder-anchor-add">
+      <input type="time" id="builder-anchor-time" class="builder-time-input" aria-label="Anchor time">
+      <input type="text" id="builder-anchor-label" class="builder-text-input" placeholder="Label" aria-label="Anchor label">
+      <button class="builder-add-anchor-btn" id="builder-anchor-add-btn">Add</button>
+    </div>
+    <div class="builder-actions">
+      <button class="builder-cancel-btn" id="builder-cancel-anchors">Cancel</button>
+      <button class="builder-save-btn" id="builder-save-btn">Create Template</button>
+    </div>
+  </div>
+</section>
+
+<div class="confirm-dialog-backdrop" id="confirm-dialog-backdrop">
+  <div class="confirm-dialog">
+    <div class="confirm-dialog-title" id="confirm-dialog-title">Are you sure?</div>
+    <div class="confirm-dialog-text" id="confirm-dialog-text"></div>
+    <div class="confirm-dialog-actions">
+      <button class="confirm-cancel-btn" id="confirm-cancel-btn">Cancel</button>
+      <button class="confirm-proceed-btn" id="confirm-proceed-btn">Confirm</button>
+    </div>
+  </div>
+</div>
 
 <div class="wrap">
 
@@ -274,7 +412,13 @@
 
     <div class="mode-note" id="mode-note"></div>
 
+    <div class="schedule-tools" id="schedule-tools" style="display:none;">
+      <button class="schedule-edit-btn" id="schedule-edit-btn">Edit Schedule</button>
+    </div>
+
     <div id="schedule"></div>
+
+    <div id="add-row-container"></div>
 
     <div class="foot">Tap any task with a &rsaquo; to see its details.</div>
   </section>
@@ -284,6 +428,15 @@
       <strong>Mode log — last 7 days</strong>
       <div class="log-days" id="log-days"></div>
       <button class="export-btn" id="export-log">Export full history</button>
+    </div>
+  </section>
+
+  <section id="view-templates" class="view">
+    <div class="templates-list" id="templates-list"></div>
+    <button class="new-template-btn" id="new-template-btn">+ New Template</button>
+
+    <div class="danger-zone">
+      <button class="reset-data-btn" id="reset-data-btn">Reset app data</button>
     </div>
   </section>
 </div>

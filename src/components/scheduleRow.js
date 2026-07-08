@@ -8,7 +8,10 @@ function checklistBadge(row) {
   return `<span class="check-badge">${check}${done}/${total}</span>`;
 }
 
-export function renderScheduleRow(row, index) {
+export function renderScheduleRow(row, index, scheduleEditMode) {
+  const deleteBtn = scheduleEditMode
+    ? `<button class="row-delete-btn" data-index="${index}" aria-label="Delete ${row.title} row">×</button>`
+    : '';
   return `
     <div class="row ${row.isAnchor ? 'anchor' : ''}" data-index="${index}">
       <div class="time">${row.time}</div>
@@ -16,11 +19,12 @@ export function renderScheduleRow(row, index) {
         <div class="activity-title">${row.title} <span class="tap-hint">›</span>${checklistBadge(row)}</div>
         ${row.note ? `<span class="note">${row.note}</span>` : ''}
       </div>
+      ${deleteBtn}
     </div>
   `;
 }
 
-export function renderSchedule(container, rows, mode) {
+export function renderSchedule(container, rows, mode, scheduleEditMode = false) {
   container.className = 'mode-' + mode;
-  container.innerHTML = rows.map(renderScheduleRow).join('');
+  container.innerHTML = rows.map((row, i) => renderScheduleRow(row, i, scheduleEditMode)).join('');
 }
