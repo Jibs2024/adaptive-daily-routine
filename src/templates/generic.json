@@ -9,9 +9,14 @@
         "time": "10:00pm", "title": "Wind down", "isAnchor": false, "note": "",
         "detailType": "checklist",
         "detailContent": [
-          { "label": "Take evening meds", "checked": false },
-          { "label": "Screens off", "checked": false },
-          { "label": "Prep tomorrow's bag", "checked": false }
+          {
+            "section": null,
+            "items": [
+              { "name": "Take evening meds", "checked": false },
+              { "name": "Screens off", "checked": false },
+              { "name": "Prep tomorrow's bag", "checked": false }
+            ]
+          }
         ]
       },
       { "time": "10:30pm", "title": "Sleep begins", "isAnchor": false, "note": "~7.5h block" },
@@ -32,8 +37,13 @@
         "time": "9:30pm", "title": "Wind down", "isAnchor": false, "note": "",
         "detailType": "checklist",
         "detailContent": [
-          { "label": "Take evening meds", "checked": false },
-          { "label": "Screens off early", "checked": false }
+          {
+            "section": null,
+            "items": [
+              { "name": "Take evening meds", "checked": false },
+              { "name": "Screens off early", "checked": false }
+            ]
+          }
         ]
       },
       { "time": "10:00pm", "title": "Sleep begins", "isAnchor": false, "note": "Protect this — go longer if needed" },

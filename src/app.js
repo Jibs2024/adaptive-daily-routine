@@ -68,9 +68,10 @@ function closeSheet() {
   openRowIndex = null;
 }
 
-function toggleCheck(itemIdx) {
+function toggleCheck(groupIdx, itemIdx) {
   const row = currentRows[openRowIndex];
-  row.detailContent[itemIdx].checked = !row.detailContent[itemIdx].checked;
+  const item = row.detailContent[groupIdx].items[itemIdx];
+  item.checked = !item.checked;
   refreshDetailSheetBody(sheetEls, row, toggleCheck);
   renderSchedule(scheduleEl, currentRows, currentMode);
 }

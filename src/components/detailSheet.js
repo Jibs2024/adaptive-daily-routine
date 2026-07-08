@@ -1,17 +1,32 @@
+function renderChecklistItem(item, groupIdx, itemIdx) {
+  return `
+    <div class="checklist-item ${item.checked ? 'checked' : ''}" data-group="${groupIdx}" data-idx="${itemIdx}">
+      <input type="checkbox" ${item.checked ? 'checked' : ''} data-group="${groupIdx}" data-idx="${itemIdx}">
+      <div class="checklist-item-text">
+        <div class="checklist-item-head">
+          <span class="checklist-name">${item.name}</span>
+          ${item.dose ? `<span class="checklist-dose">${item.dose}</span>` : ''}
+        </div>
+        ${item.cue ? `<div class="checklist-cue">${item.cue}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
 function renderBody(bodyEl, row, onToggleCheck) {
   if (row.detailType === 'checklist') {
     bodyEl.innerHTML = row.detailContent
       .map(
-        (item, idx) => `
-      <div class="checklist-item ${item.checked ? 'checked' : ''}" data-idx="${idx}">
-        <input type="checkbox" ${item.checked ? 'checked' : ''} data-idx="${idx}">
-        <span>${item.label}</span>
+        (group, groupIdx) => `
+      <div class="checklist-group">
+        ${group.section ? `<div class="checklist-section">${group.section}</div>` : ''}
+        ${group.items.map((item, itemIdx) => renderChecklistItem(item, groupIdx, itemIdx)).join('')}
       </div>
     `
       )
       .join('');
     bodyEl.querySelectorAll('.checklist-item').forEach((el) => {
-      el.addEventListener('click', () => onToggleCheck(Number(el.dataset.idx)));
+      el.addEventListener('click', () => onToggleCheck(Number(el.dataset.group), Number(el.dataset.idx)));
     });
   } else {
     bodyEl.innerHTML = row.detailContent
