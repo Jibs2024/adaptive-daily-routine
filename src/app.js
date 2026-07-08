@@ -33,6 +33,7 @@ import {
   getCustomTemplate,
   saveCustomTemplate,
   deleteCustomTemplate,
+  cleanupOldDailyKeys,
 } from './storage.js';
 
 if ('serviceWorker' in navigator) {
@@ -649,6 +650,8 @@ async function completeOnboarding(id) {
 }
 
 async function init() {
+  cleanupOldDailyKeys();
+
   [staticTemplateIndex, modeNotes] = await Promise.all([
     fetch('src/templates/index.json').then((res) => res.json()),
     fetch('src/config/mode-notes.json').then((res) => res.json()),

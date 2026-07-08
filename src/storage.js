@@ -49,6 +49,30 @@ export function setChecklistState(templateId, mode, rowId, detailContent, scope)
   localStorage.setItem(checklistKey(templateId, mode, rowId, scope), JSON.stringify(detailContent));
 }
 
+// Daily-reset checklist keys (Wind Down, Exercise's weekday-variant state,
+// etc.) carry a trailing YYYY-MM-DD and accumulate one entry per day the
+// checklist was used - deliberately NOT modelog: entries, which are the
+// app's actual tracked history (the whole point of tracking mode is
+// long-term pattern spotting, and the export feature depends on all of it).
+export function cleanupOldDailyKeys(maxAgeDays = 90) {
+  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+  const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000;
+  let removed = 0;
+
+  Object.keys(localStorage).forEach((key) => {
+    if (!key.startsWith(CHECKLIST_PREFIX)) return;
+    const lastPart = key.slice(key.lastIndexOf(':') + 1);
+    if (!datePattern.test(lastPart)) return;
+    const keyTime = new Date(`${lastPart}T00:00:00Z`).getTime();
+    if (!Number.isNaN(keyTime) && keyTime < cutoff) {
+      localStorage.removeItem(key);
+      removed++;
+    }
+  });
+
+  return removed;
+}
+
 const SELECTED_TEMPLATE_KEY = 'selectedTemplateId';
 
 export function getSelectedTemplateId() {
