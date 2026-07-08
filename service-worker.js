@@ -1,4 +1,4 @@
-const CACHE_NAME = 'adaptive-routine-v15';
+const CACHE_NAME = 'adaptive-routine-v16';
 
 const APP_SHELL = [
   './',

@@ -6,18 +6,20 @@
   "schedule": {
     "full": [
       {
-        "time": "10:00pm", "title": "Wind down", "isAnchor": false, "note": "",
-        "detailType": "checklist", "id": "wind-down", "persistChecklist": "daily",
-        "detailContent": [
-          {
-            "section": null,
-            "items": [
-              { "name": "Take evening meds", "checked": false },
-              { "name": "Screens off", "checked": false },
-              { "name": "Prep tomorrow's bag", "checked": false }
-            ]
-          }
-        ]
+        "time": "10:00pm", "title": "Wind down", "isAnchor": false, "note": "", "id": "wind-down",
+        "checklist": {
+          "persistChecklist": "daily",
+          "content": [
+            {
+              "section": null,
+              "items": [
+                { "name": "Take evening meds", "checked": false },
+                { "name": "Screens off", "checked": false },
+                { "name": "Prep tomorrow's bag", "checked": false }
+              ]
+            }
+          ]
+        }
       },
       { "time": "10:30pm", "title": "Sleep begins", "isAnchor": false, "note": "~7.5h block", "id": "sleep-begins" },
       { "time": "6:00am", "title": "Wake up", "isAnchor": false, "note": "", "id": "wake-up" },
@@ -34,17 +36,19 @@
     ],
     "recovery": [
       {
-        "time": "9:30pm", "title": "Wind down", "isAnchor": false, "note": "",
-        "detailType": "checklist", "id": "wind-down", "persistChecklist": "daily",
-        "detailContent": [
-          {
-            "section": null,
-            "items": [
-              { "name": "Take evening meds", "checked": false },
-              { "name": "Screens off early", "checked": false }
-            ]
-          }
-        ]
+        "time": "9:30pm", "title": "Wind down", "isAnchor": false, "note": "", "id": "wind-down",
+        "checklist": {
+          "persistChecklist": "daily",
+          "content": [
+            {
+              "section": null,
+              "items": [
+                { "name": "Take evening meds", "checked": false },
+                { "name": "Screens off early", "checked": false }
+              ]
+            }
+          ]
+        }
       },
       { "time": "10:00pm", "title": "Sleep begins", "isAnchor": false, "note": "Protect this — go longer if needed", "id": "sleep-begins" },
       { "time": "7:00am", "title": "Wake up", "isAnchor": false, "note": "Let this drift later if needed", "id": "wake-up" },

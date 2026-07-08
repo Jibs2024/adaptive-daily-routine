@@ -1,3 +1,11 @@
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function hasStaticContent(row) {
+  return row.detailType === 'reference' || row.detailType === 'plan';
+}
+
 function renderChecklistItem(item, groupIdx, itemIdx, editMode) {
   const control = editMode
     ? `<button class="checklist-remove" data-group="${groupIdx}" data-idx="${itemIdx}" aria-label="Remove item">×</button>`
@@ -65,8 +73,6 @@ function wireChecklistEvents(bodyEl, editState, handlers) {
       });
       input.focus();
     });
-    const removeChecklistBtn = bodyEl.querySelector('.remove-checklist-btn');
-    if (removeChecklistBtn) removeChecklistBtn.addEventListener('click', handlers.onRemoveChecklist);
   } else {
     bodyEl.querySelectorAll('.checklist-item').forEach((el) => {
       el.addEventListener('click', () => handlers.onToggleCheck(Number(el.dataset.group), Number(el.dataset.idx)));
@@ -75,26 +81,54 @@ function wireChecklistEvents(bodyEl, editState, handlers) {
 }
 
 function renderBody(bodyEl, row, editState, handlers) {
-  if (row.detailType === 'checklist') {
-    const groupsHtml = row.detailContent
-      .map((group, groupIdx) => renderChecklistGroup(group, groupIdx, editState))
-      .join('');
-    const removeChecklistHtml = editState.editMode
-      ? `<button class="remove-checklist-btn">Remove checklist from this task</button>`
-      : '';
-    bodyEl.innerHTML = groupsHtml + removeChecklistHtml;
-    wireChecklistEvents(bodyEl, editState, handlers);
-  } else if (!row.detailType) {
+  const staticContent = hasStaticContent(row);
+  const checklist = !!row.checklist;
+
+  if (!staticContent && !checklist) {
     bodyEl.innerHTML = `
       <p class="empty-detail-text">This task doesn't have any detail content yet.</p>
       <button class="assign-checklist-btn">+ Add a checklist</button>
     `;
     bodyEl.querySelector('.assign-checklist-btn').addEventListener('click', handlers.onAssignChecklist);
-  } else {
-    bodyEl.innerHTML = row.detailContent
-      .split('\n\n')
-      .map((p) => `<p>${p}</p>`)
-      .join('');
+    return;
+  }
+
+  let html = '';
+
+  if (staticContent) {
+    html += editState.editMode
+      ? `<textarea class="static-content-editor" rows="8">${escapeHtml(row.detailContent)}</textarea>`
+      : row.detailContent
+          .split('\n\n')
+          .map((p) => `<p>${p}</p>`)
+          .join('');
+  }
+
+  if (checklist) {
+    html += `<div class="checklist-wrapper">${row.checklist.content
+      .map((group, groupIdx) => renderChecklistGroup(group, groupIdx, editState))
+      .join('')}</div>`;
+  } else if (editState.editMode) {
+    html += `<button class="assign-checklist-btn">+ Add a checklist</button>`;
+  }
+
+  if (checklist && editState.editMode) {
+    html += `<button class="remove-checklist-btn">Remove checklist from this task</button>`;
+  }
+
+  bodyEl.innerHTML = html;
+
+  if (checklist) wireChecklistEvents(bodyEl, editState, handlers);
+
+  const assignBtn = bodyEl.querySelector('.assign-checklist-btn');
+  if (assignBtn) assignBtn.addEventListener('click', handlers.onAssignChecklist);
+
+  const removeBtn = bodyEl.querySelector('.remove-checklist-btn');
+  if (removeBtn) removeBtn.addEventListener('click', handlers.onRemoveChecklist);
+
+  if (staticContent && editState.editMode) {
+    const textarea = bodyEl.querySelector('.static-content-editor');
+    textarea.addEventListener('blur', () => handlers.onSaveStaticContent(textarea.value));
   }
 }
 
@@ -108,6 +142,11 @@ export function renderDetailSheet(els, row, editState, handlers) {
 
 export function refreshDetailSheetBody(els, row, editState, handlers) {
   renderBody(els.body, row, editState, handlers);
+}
+
+export function getPendingStaticContentEdit(els) {
+  const textarea = els.body.querySelector('.static-content-editor');
+  return textarea ? textarea.value : null;
 }
 
 export function closeDetailSheet(els) {

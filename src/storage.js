@@ -59,15 +59,25 @@ export function setSelectedTemplateId(id) {
   localStorage.setItem(SELECTED_TEMPLATE_KEY, id);
 }
 
-// Whether a row's detail type has been user-assigned (turned into a checklist,
-// or a checklist removed back to plain). Always indefinite regardless of the
-// row's own persistChecklist scope, since this is a structural decision about
-// the schedule's shape, not day-to-day checklist progress.
+// Whether a checklist has been user-attached to a row (independent of
+// whatever static reference/plan content that row might also have), or
+// detached back off. Always indefinite regardless of the checklist's own
+// persistChecklist scope, since this is a structural decision about the
+// schedule's shape, not day-to-day checklist progress.
 const TYPE_PREFIX = 'checklist-type:';
+
+// Free-text edits to a row's static reference/plan content. Always
+// indefinite - an edited meal plan or dhikr text is a durable
+// customization, not something that should reset overnight.
+const CONTENT_PREFIX = 'content:';
 
 export function hasAnyPriorUsage() {
   return Object.keys(localStorage).some(
-    (key) => key.startsWith(PREFIX) || key.startsWith(CHECKLIST_PREFIX) || key.startsWith(TYPE_PREFIX)
+    (key) =>
+      key.startsWith(PREFIX) ||
+      key.startsWith(CHECKLIST_PREFIX) ||
+      key.startsWith(TYPE_PREFIX) ||
+      key.startsWith(CONTENT_PREFIX)
   );
 }
 
@@ -81,4 +91,16 @@ export function getTypeOverride(templateId, mode, rowId) {
 
 export function setTypeOverride(templateId, mode, rowId, value) {
   localStorage.setItem(typeKey(templateId, mode, rowId), value);
+}
+
+function contentKey(templateId, mode, rowId) {
+  return `${CONTENT_PREFIX}${templateId}:${mode}:${rowId}`;
+}
+
+export function getRowText(templateId, mode, rowId) {
+  return localStorage.getItem(contentKey(templateId, mode, rowId));
+}
+
+export function setRowText(templateId, mode, rowId, text) {
+  localStorage.setItem(contentKey(templateId, mode, rowId), text);
 }
