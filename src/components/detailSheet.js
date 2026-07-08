@@ -83,6 +83,10 @@ function wireChecklistEvents(bodyEl, editState, handlers) {
 function renderBody(bodyEl, row, editState, handlers) {
   const staticContent = hasStaticContent(row);
   const checklist = !!row.checklist;
+  // Rows whose content is derived from the day of week (e.g. a weekly
+  // training split) aren't eligible for manual checklist assign/remove -
+  // that would create an ambiguous "remove it just for today, or forever?"
+  const weeklyManaged = !!row.weeklySchedule;
 
   if (!staticContent && !checklist) {
     bodyEl.innerHTML = `
@@ -108,11 +112,11 @@ function renderBody(bodyEl, row, editState, handlers) {
     html += `<div class="checklist-wrapper">${row.checklist.content
       .map((group, groupIdx) => renderChecklistGroup(group, groupIdx, editState))
       .join('')}</div>`;
-  } else if (editState.editMode) {
+  } else if (editState.editMode && !weeklyManaged) {
     html += `<button class="assign-checklist-btn">+ Add a checklist</button>`;
   }
 
-  if (checklist && editState.editMode) {
+  if (checklist && editState.editMode && !weeklyManaged) {
     html += `<button class="remove-checklist-btn">Remove checklist from this task</button>`;
   }
 

@@ -144,17 +144,51 @@ function buildMergedTemplateIndex() {
   templateIndex = [...staticTemplateIndex, ...customEntries];
 }
 
+// Rows with a `weeklySchedule` show different content on different days of
+// the week (e.g. Prayer-Anchored's Exercise row: real content some days,
+// an Upper Body placeholder others, a rest-day message on Sunday). The
+// variant is picked from the device's actual current day and swapped into
+// the row's normal detailType/detailContent/checklist shape, so everything
+// downstream (rendering, persistence) treats it like any other row.
+function applyWeeklyVariant(row) {
+  if (!row.weeklySchedule || !row.variants) return;
+  const dayOfWeek = String(new Date().getDay());
+  const variant = row.variants[row.weeklySchedule[dayOfWeek]];
+  if (!variant) return;
+
+  row.note = variant.note !== undefined ? variant.note : row.note;
+  if (variant.checklist) {
+    row.checklist = JSON.parse(JSON.stringify(variant.checklist));
+    row.detailType = undefined;
+    row.detailContent = undefined;
+  } else if (variant.detailType) {
+    row.detailType = variant.detailType;
+    row.detailContent = variant.detailContent;
+    row.checklist = undefined;
+  } else {
+    row.checklist = undefined;
+    row.detailType = undefined;
+    row.detailContent = undefined;
+  }
+}
+
 function hydrateRows(templateData, templateId) {
   Object.entries(templateData.schedule).forEach(([mode, rows]) => {
     rows.forEach((row) => {
-      // 1. Apply checklist attach/detach (independent of any static content
-      // the row might have). Always indefinite - a structural decision about
-      // the schedule's shape, not day-to-day checklist progress.
-      const checklistOverride = getTypeOverride(templateId, mode, row.id);
-      if (checklistOverride === 'checklist' && !row.checklist) {
-        row.checklist = { persistChecklist: 'indefinite', content: [{ section: null, items: [] }] };
-      } else if (checklistOverride === 'none') {
-        row.checklist = undefined;
+      const weeklyManaged = !!row.weeklySchedule;
+
+      if (weeklyManaged) {
+        applyWeeklyVariant(row);
+      } else {
+        // 1. Apply checklist attach/detach (independent of any static content
+        // the row might have). Always indefinite - a structural decision about
+        // the schedule's shape, not day-to-day checklist progress.
+        const checklistOverride = getTypeOverride(templateId, mode, row.id);
+        if (checklistOverride === 'checklist' && !row.checklist) {
+          row.checklist = { persistChecklist: 'indefinite', content: [{ section: null, items: [] }] };
+        } else if (checklistOverride === 'none') {
+          row.checklist = undefined;
+        }
       }
 
       // 2. Layer the checklist's own content/checked-state persistence on top.
