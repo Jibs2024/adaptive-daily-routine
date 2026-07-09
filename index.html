@@ -272,15 +272,21 @@
   .toast-message { font-size: 13px; color: var(--text); }
   .toast-undo { background: none; border: none; color: var(--full); font-weight: 700; font-size: 13px; cursor: pointer; padding: 4px 8px; }
 
-  .update-banner {
+  .top-banners {
     position: fixed; top: 0; left: 0; right: 0; padding-top: env(safe-area-inset-top);
-    background: var(--full); z-index: 30; display: none;
+    z-index: 30; display: flex; flex-direction: column;
   }
+  .update-banner { background: var(--full); display: none; }
   .update-banner.open { display: block; }
   .update-banner-btn {
     width: 100%; background: none; border: none; font-family: inherit; cursor: pointer;
     color: #14181B; font-size: 13px; font-weight: 700; padding: 10px 16px; text-align: center;
   }
+  .offline-banner {
+    background: var(--bg-card); border-bottom: 1px solid var(--line); color: var(--text-dim);
+    font-size: 12.5px; padding: 9px 16px; text-align: center; display: none;
+  }
+  .offline-banner.open { display: block; }
 
   /* templates tab */
   .templates-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
@@ -550,8 +556,11 @@
 
 <nav class="bottom-nav" id="bottom-nav"></nav>
 
-<div class="update-banner" id="update-banner" role="status">
-  <button class="update-banner-btn" id="update-banner-btn">Update available — tap to refresh</button>
+<div class="top-banners">
+  <div class="offline-banner" id="offline-banner" role="status">You're offline — changes are saved on this device</div>
+  <div class="update-banner" id="update-banner" role="status">
+    <button class="update-banner-btn" id="update-banner-btn">Update available — tap to refresh</button>
+  </div>
 </div>
 
 <div class="sheet-backdrop" id="backdrop"></div>

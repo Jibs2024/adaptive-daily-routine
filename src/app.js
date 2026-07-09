@@ -38,8 +38,16 @@ import {
 
 const updateBannerEl = document.getElementById('update-banner');
 const updateBannerBtn = document.getElementById('update-banner-btn');
+const offlineBannerEl = document.getElementById('offline-banner');
 
 updateBannerBtn.addEventListener('click', () => window.location.reload());
+
+function updateOfflineBanner() {
+  offlineBannerEl.classList.toggle('open', !navigator.onLine);
+}
+updateOfflineBanner();
+window.addEventListener('online', updateOfflineBanner);
+window.addEventListener('offline', updateOfflineBanner);
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
