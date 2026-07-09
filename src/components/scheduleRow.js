@@ -54,6 +54,11 @@ export function renderScheduleRow(row, index, scheduleEditMode, editingRowIndex)
 
 export function renderSchedule(container, rows, mode, scheduleEditMode = false, isCustom = false, editingRowIndex = null) {
   container.className = 'mode-' + mode;
+  // First real render replaces the initial loading skeleton - clear the
+  // aria-busy/label that described that skeleton so screen readers don't
+  // keep announcing "loading" once real content is showing.
+  container.removeAttribute('aria-busy');
+  container.removeAttribute('aria-label');
   if (rows.length === 0) {
     const addBtn = isCustom ? '<button class="empty-schedule-add-btn">+ Add a task</button>' : '';
     container.innerHTML = `

@@ -817,6 +817,8 @@ async function render() {
     renderFullHistory(historyListEl, getAllModeLogEntries());
   } catch (err) {
     console.error('Render failed:', err);
+    scheduleEl.removeAttribute('aria-busy');
+    scheduleEl.removeAttribute('aria-label');
     scheduleEl.innerHTML = '<div class="render-error">Something went wrong loading this schedule. Try switching modes or reloading the app.</div>';
   }
 }
@@ -909,6 +911,8 @@ async function init() {
     ]);
   } catch (err) {
     console.error('Startup failed:', err);
+    scheduleEl.removeAttribute('aria-busy');
+    scheduleEl.removeAttribute('aria-label');
     scheduleEl.innerHTML = '<div class="render-error">Could not load the app. Check your connection and reload.</div>';
     return;
   }

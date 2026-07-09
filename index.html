@@ -84,6 +84,24 @@
     background: var(--bg-card); border: 1px solid var(--anchor); border-radius: 10px; line-height: 1.5;
   }
 
+  .skeleton-row {
+    display: flex; align-items: flex-start; gap: 14px; padding: 12px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .skeleton-bar {
+    background: var(--bg-card); border-radius: 6px;
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+  }
+  .skeleton-time { width: 72px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+  .skeleton-title { flex: 1; max-width: 60%; height: 14px; margin-top: 2px; }
+  @keyframes skeleton-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.9; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-bar { animation: none; opacity: 0.6; }
+  }
+
   .empty-schedule {
     padding: 28px 16px; text-align: center; background: var(--bg-card); border: 1px dashed var(--line);
     border-radius: 10px;
@@ -524,7 +542,13 @@
       <button class="schedule-edit-btn" id="schedule-edit-btn">Edit Schedule</button>
     </div>
 
-    <div id="schedule"></div>
+    <div id="schedule" aria-busy="true" aria-label="Loading schedule">
+      <div class="skeleton-row" aria-hidden="true"><div class="skeleton-bar skeleton-time"></div><div class="skeleton-bar skeleton-title"></div></div>
+      <div class="skeleton-row" aria-hidden="true"><div class="skeleton-bar skeleton-time"></div><div class="skeleton-bar skeleton-title"></div></div>
+      <div class="skeleton-row" aria-hidden="true"><div class="skeleton-bar skeleton-time"></div><div class="skeleton-bar skeleton-title"></div></div>
+      <div class="skeleton-row" aria-hidden="true"><div class="skeleton-bar skeleton-time"></div><div class="skeleton-bar skeleton-title"></div></div>
+      <div class="skeleton-row" aria-hidden="true"><div class="skeleton-bar skeleton-time"></div><div class="skeleton-bar skeleton-title"></div></div>
+    </div>
 
     <div id="add-row-container"></div>
 
