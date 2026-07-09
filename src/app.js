@@ -41,7 +41,7 @@ import {
 // there's no build step to stamp this automatically, so the number is the
 // single source of truth for "what did I last touch," matched to the cache
 // version so the two can be cross-referenced against the commit log.
-const APP_VERSION = 'v39 · 2026-07-09';
+const APP_VERSION = 'v40 · 2026-07-09';
 
 const updateBannerEl = document.getElementById('update-banner');
 const updateBannerBtn = document.getElementById('update-banner-btn');
@@ -589,13 +589,32 @@ function saveRenameTemplate(id, newName) {
   if (!trimmed) return;
   const data = getCustomTemplate(id);
   if (!data) return;
+  const oldName = data.name;
+  renamingTemplateId = null;
+  if (oldName === trimmed) {
+    renderTemplatesTab();
+    return;
+  }
   data.name = trimmed;
   if (!saveCustomTemplate(id, data)) {
     showToast(toastEls, 'Could not save — try again', null, null);
     return;
   }
   templateCache.set(id, data);
-  renamingTemplateId = null;
+  buildMergedTemplateIndex();
+  renderTemplatesTab();
+  showToast(toastEls, `Renamed to "${trimmed}"`, 'Undo', () => undoRenameTemplate(id, oldName));
+}
+
+function undoRenameTemplate(id, oldName) {
+  const data = getCustomTemplate(id);
+  if (!data) return;
+  data.name = oldName;
+  if (!saveCustomTemplate(id, data)) {
+    showToast(toastEls, 'Could not undo — try again', null, null);
+    return;
+  }
+  templateCache.set(id, data);
   buildMergedTemplateIndex();
   renderTemplatesTab();
 }
@@ -619,15 +638,26 @@ async function duplicateTemplate(id) {
     }
     templateCache.set(newId, cloned);
     buildMergedTemplateIndex();
+    const previousTemplateId = currentTemplateId;
     currentTemplateId = newId;
     setSelectedTemplateId(newId);
     currentView = 'today';
     updateView();
     await render();
+    showToast(toastEls, `Duplicated as "${cloned.name}"`, 'Undo', () => undoDuplicateTemplate(newId, previousTemplateId));
   } catch (err) {
     console.error('Template duplication failed:', err);
     showToast(toastEls, 'Could not duplicate — try again', null, null);
   }
+}
+
+async function undoDuplicateTemplate(newId, previousTemplateId) {
+  deleteCustomTemplate(newId);
+  templateCache.delete(newId);
+  buildMergedTemplateIndex();
+  currentTemplateId = previousTemplateId;
+  setSelectedTemplateId(previousTemplateId);
+  await render();
 }
 
 function deleteTemplate(id) {
