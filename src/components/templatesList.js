@@ -28,7 +28,8 @@ export function renderTemplatesList(container, templates, currentId, renamingId,
       </div>
       ${
         t.isCustom
-          ? `<button class="template-rename-btn" data-id="${t.id}" aria-label="Rename ${t.label} template">✎</button>
+          ? `<button class="template-duplicate-btn" data-id="${t.id}" aria-label="Duplicate ${t.label} template">⧉</button>
+             <button class="template-rename-btn" data-id="${t.id}" aria-label="Rename ${t.label} template">✎</button>
              <button class="template-delete-btn" data-id="${t.id}" aria-label="Delete ${t.label} template">×</button>`
           : ''
       }
@@ -39,11 +40,11 @@ export function renderTemplatesList(container, templates, currentId, renamingId,
 
   container.querySelectorAll('.template-list-item[role="button"]').forEach((el) => {
     el.addEventListener('click', (e) => {
-      if (e.target.closest('.template-delete-btn') || e.target.closest('.template-rename-btn')) return;
+      if (e.target.closest('.template-delete-btn') || e.target.closest('.template-rename-btn') || e.target.closest('.template-duplicate-btn')) return;
       handlers.onSelect(el.dataset.id);
     });
     el.addEventListener('keydown', (e) => {
-      if (e.target.closest('.template-delete-btn') || e.target.closest('.template-rename-btn')) return;
+      if (e.target.closest('.template-delete-btn') || e.target.closest('.template-rename-btn') || e.target.closest('.template-duplicate-btn')) return;
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         handlers.onSelect(el.dataset.id);
@@ -54,6 +55,12 @@ export function renderTemplatesList(container, templates, currentId, renamingId,
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       handlers.onDelete(btn.dataset.id);
+    });
+  });
+  container.querySelectorAll('.template-duplicate-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      handlers.onDuplicate(btn.dataset.id);
     });
   });
   container.querySelectorAll('.template-rename-btn').forEach((btn) => {

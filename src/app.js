@@ -540,6 +540,7 @@ function renderTemplatesTab() {
     onStartRename: startRenameTemplate,
     onSaveRename: saveRenameTemplate,
     onCancelRename: cancelRenameTemplate,
+    onDuplicate: duplicateTemplate,
   });
 }
 
@@ -574,6 +575,36 @@ function saveRenameTemplate(id, newName) {
   renamingTemplateId = null;
   buildMergedTemplateIndex();
   renderTemplatesTab();
+}
+
+async function duplicateTemplate(id) {
+  try {
+    const data = getCustomTemplate(id);
+    if (!data) return;
+    const cloned = JSON.parse(JSON.stringify(data));
+    const newId = generateTemplateId(data.name);
+    cloned.id = newId;
+    cloned.name = `${data.name} (Copy)`;
+    ['full', 'recovery'].forEach((mode) => {
+      (cloned.schedule[mode] || []).forEach((row) => {
+        row.id = generateRowId(row.title);
+      });
+    });
+    if (!saveCustomTemplate(newId, cloned)) {
+      showToast(toastEls, 'Could not duplicate — try again', null, null);
+      return;
+    }
+    templateCache.set(newId, cloned);
+    buildMergedTemplateIndex();
+    currentTemplateId = newId;
+    setSelectedTemplateId(newId);
+    currentView = 'today';
+    updateView();
+    await render();
+  } catch (err) {
+    console.error('Template duplication failed:', err);
+    showToast(toastEls, 'Could not duplicate — try again', null, null);
+  }
 }
 
 function deleteTemplate(id) {
