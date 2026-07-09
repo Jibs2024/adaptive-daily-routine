@@ -48,8 +48,21 @@
        text one). This variant clears 4.5:1 on both backgrounds. */
     --anchor-text: #D07C6A;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  * {
+    box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
+  /* Actual readable/copyable content - reference & plan text, checklist item
+     names/doses/cues - should still allow normal selection and iOS's
+     copy/lookup callout. Everything else (rows, buttons, nav, labels,
+     checkboxes, controls inside the sheet too) is UI chrome, not content,
+     so a long-press on it shouldn't pop up a text selection loupe.
+     Inputs/textareas are unaffected by user-select:none on an ancestor -
+     browsers always let you select text you're actively editing. */
+  .sheet-body p, .checklist-name, .checklist-dose, .checklist-cue {
+    -webkit-user-select: text; user-select: text; -webkit-touch-callout: default;
+  }
   .sr-only {
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
     clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
