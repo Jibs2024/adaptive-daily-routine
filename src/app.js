@@ -41,7 +41,7 @@ import {
 // there's no build step to stamp this automatically, so the number is the
 // single source of truth for "what did I last touch," matched to the cache
 // version so the two can be cross-referenced against the commit log.
-const APP_VERSION = 'v41 · 2026-07-09';
+const APP_VERSION = 'v42 · 2026-07-09';
 
 const updateBannerEl = document.getElementById('update-banner');
 const updateBannerBtn = document.getElementById('update-banner-btn');
@@ -125,6 +125,9 @@ const confirmDialogEl = document.getElementById('confirm-dialog');
 const confirmDialogText = document.getElementById('confirm-dialog-text');
 const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
 const confirmProceedBtn = document.getElementById('confirm-proceed-btn');
+const confirmDialogTypedEl = document.getElementById('confirm-dialog-typed');
+const confirmDialogTypedLabelEl = document.getElementById('confirm-dialog-typed-label');
+const confirmDialogTypedInputEl = document.getElementById('confirm-dialog-typed-input');
 const templateBuilderEl = document.getElementById('template-builder');
 const builderStepName = document.getElementById('builder-step-name');
 const builderStepAnchors = document.getElementById('builder-step-anchors');
@@ -715,9 +718,27 @@ function undoDeleteTemplate(id, data, wasActive) {
 
 let pendingConfirmAction = null;
 
-function showConfirmDialog(text, onConfirm) {
+let requiredTypedWord = null;
+
+// options.requireTyped: a word the user must type exactly (case-insensitive)
+// before Confirm becomes clickable - for actions destructive enough that a
+// single mistaken tap (or a double-tap racing past the usual confirm) would
+// be a real loss, not just an inconvenience.
+function showConfirmDialog(text, onConfirm, options = {}) {
   confirmDialogText.textContent = text;
   pendingConfirmAction = onConfirm;
+  requiredTypedWord = options.requireTyped || null;
+
+  if (requiredTypedWord) {
+    confirmDialogTypedLabelEl.textContent = `Type ${requiredTypedWord} to confirm`;
+    confirmDialogTypedInputEl.value = '';
+    confirmDialogTypedEl.style.display = '';
+    confirmProceedBtn.disabled = true;
+  } else {
+    confirmDialogTypedEl.style.display = 'none';
+    confirmProceedBtn.disabled = false;
+  }
+
   confirmDialogBackdrop.classList.add('open');
   trapFocus(confirmDialogEl, { onEscape: closeConfirmDialog });
 }
@@ -725,12 +746,19 @@ function showConfirmDialog(text, onConfirm) {
 function closeConfirmDialog() {
   confirmDialogBackdrop.classList.remove('open');
   pendingConfirmAction = null;
+  requiredTypedWord = null;
+  confirmDialogTypedEl.style.display = 'none';
+  confirmProceedBtn.disabled = false;
   releaseFocus();
 }
 
 confirmCancelBtn.addEventListener('click', closeConfirmDialog);
 confirmDialogBackdrop.addEventListener('click', (e) => {
   if (e.target === confirmDialogBackdrop) closeConfirmDialog();
+});
+confirmDialogTypedInputEl.addEventListener('input', () => {
+  if (!requiredTypedWord) return;
+  confirmProceedBtn.disabled = confirmDialogTypedInputEl.value.trim().toUpperCase() !== requiredTypedWord.toUpperCase();
 });
 confirmProceedBtn.addEventListener('click', () => {
   const action = pendingConfirmAction;
@@ -753,8 +781,9 @@ function resetAppData() {
 
 resetDataBtn.addEventListener('click', () => {
   showConfirmDialog(
-    'This permanently deletes every template, checklist, and mode-log entry stored on this device. This cannot be undone.',
-    resetAppData
+    'This permanently and irreversibly deletes every template, checklist, and mode-log entry on this device. There is no undo, and no way to recover this data afterward unless you have a backup file. Export a backup first if you want one.',
+    resetAppData,
+    { requireTyped: 'RESET' }
   );
 });
 
