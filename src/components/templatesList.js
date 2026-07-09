@@ -14,13 +14,11 @@ function renderRenameForm(t) {
   `;
 }
 
-export function renderTemplatesList(container, templates, currentId, renamingId, handlers) {
-  container.innerHTML = templates
-    .map((t) => {
-      if (t.id === renamingId) {
-        return `<div class="template-list-item renaming" data-id="${t.id}">${renderRenameForm(t)}</div>`;
-      }
-      return `
+function renderItem(t, currentId, renamingId) {
+  if (t.id === renamingId) {
+    return `<div class="template-list-item renaming" data-id="${t.id}">${renderRenameForm(t)}</div>`;
+  }
+  return `
     <div class="template-list-item ${t.id === currentId ? 'active' : ''}" data-id="${t.id}" role="button" tabindex="0" aria-pressed="${t.id === currentId}" aria-label="Select ${t.label} template">
       <div class="template-list-info">
         <div class="template-list-name">${t.label}<span class="template-list-sublabel">${t.sublabel || ''}</span></div>
@@ -35,8 +33,22 @@ export function renderTemplatesList(container, templates, currentId, renamingId,
       }
     </div>
   `;
-    })
-    .join('');
+}
+
+export function renderTemplatesList(container, templates, currentId, renamingId, handlers) {
+  const builtIn = templates.filter((t) => !t.isCustom);
+  const custom = templates.filter((t) => t.isCustom);
+
+  let html = '';
+  if (builtIn.length > 0) {
+    html += '<div class="template-group-label">Built-in</div>';
+    html += builtIn.map((t) => renderItem(t, currentId, renamingId)).join('');
+  }
+  if (custom.length > 0) {
+    html += '<div class="template-group-label">Your Templates</div>';
+    html += custom.map((t) => renderItem(t, currentId, renamingId)).join('');
+  }
+  container.innerHTML = html;
 
   container.querySelectorAll('.template-list-item[role="button"]').forEach((el) => {
     el.addEventListener('click', (e) => {
