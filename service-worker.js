@@ -1,4 +1,4 @@
-const CACHE_NAME = 'adaptive-routine-v38';
+const CACHE_NAME = 'adaptive-routine-v39';
 
 const APP_SHELL = [
   './',
@@ -6,6 +6,20 @@ const APP_SHELL = [
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/splash/apple-splash-640-1136.png',
+  './icons/splash/apple-splash-750-1334.png',
+  './icons/splash/apple-splash-1242-2208.png',
+  './icons/splash/apple-splash-1125-2436.png',
+  './icons/splash/apple-splash-828-1792.png',
+  './icons/splash/apple-splash-1242-2688.png',
+  './icons/splash/apple-splash-1080-2340.png',
+  './icons/splash/apple-splash-1170-2532.png',
+  './icons/splash/apple-splash-1284-2778.png',
+  './icons/splash/apple-splash-1179-2556.png',
+  './icons/splash/apple-splash-1290-2796.png',
+  './icons/splash/apple-splash-1536-2048.png',
+  './icons/splash/apple-splash-1668-2388.png',
+  './icons/splash/apple-splash-2048-2732.png',
   './src/app.js',
   './src/storage.js',
   './src/timeUtils.js',
