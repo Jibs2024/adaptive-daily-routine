@@ -15,6 +15,7 @@ import { renderTemplatesList } from './components/templatesList.js';
 import { renderAnchorList } from './components/templateBuilder.js';
 import { parse24hTime, formatDisplayTime, insertRowByTime } from './timeUtils.js';
 import { trapFocus, releaseFocus } from './focusTrap.js';
+import { buildBackupJson, restoreFromBackupJson } from './backup.js';
 import {
   logMode,
   getMode,
@@ -108,6 +109,9 @@ const onboardingOptionsEl = document.getElementById('onboarding-options');
 const templatesListEl = document.getElementById('templates-list');
 const newTemplateBtn = document.getElementById('new-template-btn');
 const resetDataBtn = document.getElementById('reset-data-btn');
+const backupExportBtn = document.getElementById('backup-export-btn');
+const backupImportBtn = document.getElementById('backup-import-btn');
+const backupImportInput = document.getElementById('backup-import-input');
 const confirmDialogBackdrop = document.getElementById('confirm-dialog-backdrop');
 const confirmDialogEl = document.getElementById('confirm-dialog');
 const confirmDialogText = document.getElementById('confirm-dialog-text');
@@ -703,6 +707,77 @@ resetDataBtn.addEventListener('click', () => {
     'This permanently deletes every template, checklist, and mode-log entry stored on this device. This cannot be undone.',
     resetAppData
   );
+});
+
+// ---- Backup & restore ----
+
+async function exportBackup() {
+  const json = buildBackupJson();
+  const filename = `adaptive-routine-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  const file = new File([json], filename, { type: 'application/json' });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'Adaptive Daily Routine Backup' });
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      console.error('Backup file share failed:', err);
+    }
+  }
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Adaptive Daily Routine Backup', text: json });
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      console.error('Backup text share failed:', err);
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(json);
+    showToast(toastEls, 'Backup copied to clipboard', null, null);
+  } catch (err) {
+    console.error('Backup clipboard copy failed:', err);
+    showToast(toastEls, 'Could not export backup — try again', null, null);
+  }
+}
+
+function importBackup() {
+  backupImportInput.value = '';
+  backupImportInput.click();
+}
+
+function restoreBackup(text) {
+  try {
+    restoreFromBackupJson(text);
+  } catch (err) {
+    console.error('Backup restore failed:', err);
+    showToast(toastEls, err.message || 'Could not restore backup — try again', null, null);
+    return;
+  }
+  window.location.reload();
+}
+
+backupExportBtn.addEventListener('click', exportBackup);
+backupImportBtn.addEventListener('click', importBackup);
+backupImportInput.addEventListener('change', () => {
+  const file = backupImportInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    showConfirmDialog(
+      'This replaces every template, checklist, and mode-log entry currently on this device with the contents of this backup file. This cannot be undone.',
+      () => restoreBackup(reader.result)
+    );
+  };
+  reader.onerror = () => {
+    console.error('Backup file read failed:', reader.error);
+    showToast(toastEls, 'Could not read that file — try again', null, null);
+  };
+  reader.readAsText(file);
 });
 
 // ---- New Template builder flow ----

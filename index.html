@@ -452,6 +452,16 @@
   .row-edit-cancel-btn { background: none; color: var(--text-dim); }
   .row-edit-save-btn { background: var(--full); color: #1A1408; font-weight: 700; border-color: var(--full); }
 
+  /* backup & restore */
+  .backup-zone { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .backup-zone strong { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); display: block; margin-bottom: 8px; }
+  .backup-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; margin-bottom: 12px; }
+  .backup-actions { display: flex; gap: 10px; }
+  .backup-export-btn, .backup-import-btn {
+    flex: 1; background: none; border: 1px solid var(--line); color: var(--text);
+    padding: 11px; border-radius: 8px; font-size: 13px; cursor: pointer; text-align: center;
+  }
+
   /* reset app data */
   .danger-zone { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
   .reset-data-btn {
@@ -571,6 +581,16 @@
   <section id="view-templates" class="view">
     <div class="templates-list" id="templates-list"></div>
     <button class="new-template-btn" id="new-template-btn">+ New Template</button>
+
+    <div class="backup-zone">
+      <strong>Backup &amp; Restore</strong>
+      <p class="backup-desc">Export everything - templates, checklist state, mode history - as a file you can save or move to another device.</p>
+      <div class="backup-actions">
+        <button class="backup-export-btn" id="backup-export-btn">Export Backup</button>
+        <button class="backup-import-btn" id="backup-import-btn">Import Backup</button>
+      </div>
+      <input type="file" id="backup-import-input" accept="application/json" style="display:none;">
+    </div>
 
     <div class="danger-zone">
       <button class="reset-data-btn" id="reset-data-btn">Reset app data</button>

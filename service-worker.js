@@ -1,4 +1,4 @@
-const CACHE_NAME = 'adaptive-routine-v36';
+const CACHE_NAME = 'adaptive-routine-v37';
 
 const APP_SHELL = [
   './',
@@ -10,6 +10,7 @@ const APP_SHELL = [
   './src/storage.js',
   './src/timeUtils.js',
   './src/focusTrap.js',
+  './src/backup.js',
   './src/components/modeToggle.js',
   './src/components/scheduleRow.js',
   './src/components/detailSheet.js',
