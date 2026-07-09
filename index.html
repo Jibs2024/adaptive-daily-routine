@@ -276,12 +276,32 @@
   }
   .template-list-sublabel { font-size: 12px; color: var(--text-dim); text-transform: none; letter-spacing: normal; margin-left: 6px; }
   .template-list-desc { font-size: 12.5px; color: var(--text-dim); margin-top: 3px; }
+  .template-rename-btn {
+    position: relative;
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); background: none;
+    color: var(--text-dim); font-size: 14px; line-height: 1; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
   .template-delete-btn {
     position: relative;
     width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--anchor); background: none;
     color: var(--anchor); font-size: 16px; line-height: 1; cursor: pointer; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; padding: 0;
   }
+  .template-rename-form {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 14px 16px;
+    background: var(--bg-card); border: 1px solid var(--full); border-radius: 12px; width: 100%;
+  }
+  .template-rename-input {
+    background: #14181B; border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px;
+    color: var(--text); font-size: 15px; font-family: inherit; flex: 1; min-width: 140px;
+  }
+  .template-rename-actions { display: flex; gap: 8px; width: 100%; }
+  .template-rename-cancel-btn, .template-rename-save-btn {
+    flex: 1; padding: 9px; border-radius: 999px; font-size: 12.5px; cursor: pointer; border: 1px solid var(--line);
+  }
+  .template-rename-cancel-btn { background: none; color: var(--text-dim); }
+  .template-rename-save-btn { background: var(--full); color: #1A1408; font-weight: 700; border-color: var(--full); }
   .new-template-btn {
     display: block; width: 100%; background: var(--bg-card); border: 1px dashed var(--line);
     color: var(--text); padding: 14px; border-radius: 12px; font-size: 14px; cursor: pointer; text-align: center;
@@ -340,6 +360,7 @@
     align-self: center; display: flex; align-items: center; justify-content: center; padding: 0; margin-left: 8px;
   }
   .checklist-remove::before,
+  .template-rename-btn::before,
   .template-delete-btn::before,
   .builder-anchor-remove::before,
   .row-edit-btn::before,

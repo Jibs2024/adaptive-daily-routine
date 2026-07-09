@@ -130,6 +130,7 @@ let editingRowIndex = null;
 let lastDeletedRow = null;
 let builderName = '';
 let builderAnchors = [];
+let renamingTemplateId = null;
 
 function updateView() {
   Object.entries(viewEls).forEach(([id, el]) => {
@@ -533,16 +534,46 @@ function saveEditRow(index) {
 // ---- Templates tab ----
 
 function renderTemplatesTab() {
-  renderTemplatesList(templatesListEl, templateIndex, currentTemplateId, {
+  renderTemplatesList(templatesListEl, templateIndex, currentTemplateId, renamingTemplateId, {
     onSelect: selectTemplateFromList,
     onDelete: deleteTemplate,
+    onStartRename: startRenameTemplate,
+    onSaveRename: saveRenameTemplate,
+    onCancelRename: cancelRenameTemplate,
   });
 }
 
 async function selectTemplateFromList(id) {
+  renamingTemplateId = null;
   await selectTemplate(id);
   currentView = 'today';
   updateView();
+}
+
+function startRenameTemplate(id) {
+  renamingTemplateId = id;
+  renderTemplatesTab();
+}
+
+function cancelRenameTemplate() {
+  renamingTemplateId = null;
+  renderTemplatesTab();
+}
+
+function saveRenameTemplate(id, newName) {
+  const trimmed = newName.trim();
+  if (!trimmed) return;
+  const data = getCustomTemplate(id);
+  if (!data) return;
+  data.name = trimmed;
+  if (!saveCustomTemplate(id, data)) {
+    showToast(toastEls, 'Could not save — try again', null, null);
+    return;
+  }
+  templateCache.set(id, data);
+  renamingTemplateId = null;
+  buildMergedTemplateIndex();
+  renderTemplatesTab();
 }
 
 function deleteTemplate(id) {
@@ -550,6 +581,7 @@ function deleteTemplate(id) {
     const data = getCustomTemplate(id);
     if (!data) return;
     const wasActive = currentTemplateId === id;
+    if (renamingTemplateId === id) renamingTemplateId = null;
     deleteCustomTemplate(id);
     templateCache.delete(id);
     buildMergedTemplateIndex();
