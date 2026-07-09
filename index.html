@@ -242,6 +242,16 @@
   .toast-message { font-size: 13px; color: var(--text); }
   .toast-undo { background: none; border: none; color: var(--full); font-weight: 700; font-size: 13px; cursor: pointer; padding: 4px 8px; }
 
+  .update-banner {
+    position: fixed; top: 0; left: 0; right: 0; padding-top: env(safe-area-inset-top);
+    background: var(--full); z-index: 30; display: none;
+  }
+  .update-banner.open { display: block; }
+  .update-banner-btn {
+    width: 100%; background: none; border: none; font-family: inherit; cursor: pointer;
+    color: #14181B; font-size: 13px; font-weight: 700; padding: 10px 16px; text-align: center;
+  }
+
   /* templates tab */
   .templates-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
   .template-list-item {
@@ -448,6 +458,10 @@
 </div>
 
 <nav class="bottom-nav" id="bottom-nav"></nav>
+
+<div class="update-banner" id="update-banner" role="status">
+  <button class="update-banner-btn" id="update-banner-btn">Update available — tap to refresh</button>
+</div>
 
 <div class="sheet-backdrop" id="backdrop"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">

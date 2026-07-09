@@ -36,10 +36,31 @@ import {
   cleanupOldDailyKeys,
 } from './storage.js';
 
+const updateBannerEl = document.getElementById('update-banner');
+const updateBannerBtn = document.getElementById('update-banner-btn');
+
+updateBannerBtn.addEventListener('click', () => window.location.reload());
+
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js').catch((err) => {
-    console.error('Service worker registration failed:', err);
-  });
+  navigator.serviceWorker
+    .register('./service-worker.js')
+    .then((registration) => {
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          // A controller already existing means this is a genuine update to
+          // an already-running app, not the very first install (which also
+          // fires 'updatefound'/'installed' but has no prior controller).
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            updateBannerEl.classList.add('open');
+          }
+        });
+      });
+    })
+    .catch((err) => {
+      console.error('Service worker registration failed:', err);
+    });
 }
 
 const modeToggleEl = document.getElementById('mode-toggle');
