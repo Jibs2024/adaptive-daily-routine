@@ -69,7 +69,7 @@
   .row.anchor .activity-title { font-weight: 600; }
   .row[data-index] { cursor: pointer; }
   .row[data-index]:active { background: rgba(255,255,255,0.03); }
-  .time { flex-shrink: 0; width: 72px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; color: var(--text-dim); padding-top: 1px; }
+  .time { flex-shrink: 0; min-width: 72px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; color: var(--text-dim); padding-top: 1px; }
   .mode-full .time { color: var(--full); }
   .mode-recovery .time { color: var(--recovery); }
   .mode-full .row.anchor .time, .mode-recovery .row.anchor .time { color: var(--anchor-text); }
@@ -357,7 +357,7 @@
   .builder-anchor-item {
     display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line);
   }
-  .builder-anchor-time { font-family: 'Barlow Condensed', sans-serif; color: var(--anchor-text); font-weight: 700; font-size: 14px; width: 72px; flex-shrink: 0; }
+  .builder-anchor-time { font-family: 'Barlow Condensed', sans-serif; color: var(--anchor-text); font-weight: 700; font-size: 14px; min-width: 72px; flex-shrink: 0; }
   .builder-anchor-label { flex: 1; font-size: 14px; }
   .builder-anchor-remove {
     position: relative;
