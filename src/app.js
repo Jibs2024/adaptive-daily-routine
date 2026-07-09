@@ -41,7 +41,7 @@ import {
 // there's no build step to stamp this automatically, so the number is the
 // single source of truth for "what did I last touch," matched to the cache
 // version so the two can be cross-referenced against the commit log.
-const APP_VERSION = 'v40 · 2026-07-09';
+const APP_VERSION = 'v41 · 2026-07-09';
 
 const updateBannerEl = document.getElementById('update-banner');
 const updateBannerBtn = document.getElementById('update-banner-btn');
@@ -134,6 +134,7 @@ const builderAnchorLabelInput = document.getElementById('builder-anchor-label');
 const builderAnchorTimeInput = document.getElementById('builder-anchor-time');
 const builderNameErrorEl = document.getElementById('builder-name-error');
 const builderAnchorErrorEl = document.getElementById('builder-anchor-error');
+const builderSaveBtn = document.getElementById('builder-save-btn');
 
 let staticTemplateIndex = [];
 let templateIndex = [];
@@ -619,7 +620,15 @@ function undoRenameTemplate(id, oldName) {
   renderTemplatesTab();
 }
 
+let duplicateInFlight = false;
+
 async function duplicateTemplate(id) {
+  // The duplicate button is a fresh DOM node re-rendered by renderTemplatesTab
+  // well before this function's only await, so a same-button double-tap is
+  // already unlikely to land twice - but a module-level flag is cheap and
+  // makes that guarantee explicit rather than relying on render timing.
+  if (duplicateInFlight) return;
+  duplicateInFlight = true;
   try {
     const data = getCustomTemplate(id);
     if (!data) return;
@@ -648,6 +657,8 @@ async function duplicateTemplate(id) {
   } catch (err) {
     console.error('Template duplication failed:', err);
     showToast(toastEls, 'Could not duplicate — try again', null, null);
+  } finally {
+    duplicateInFlight = false;
   }
 }
 
@@ -750,36 +761,45 @@ resetDataBtn.addEventListener('click', () => {
 // ---- Backup & restore ----
 
 async function exportBackup() {
-  const json = buildBackupJson();
-  const filename = `adaptive-routine-backup-${new Date().toISOString().slice(0, 10)}.json`;
-  const file = new File([json], filename, { type: 'application/json' });
-
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try {
-      await navigator.share({ files: [file], title: 'Adaptive Daily Routine Backup' });
-      return;
-    } catch (err) {
-      if (err.name === 'AbortError') return;
-      console.error('Backup file share failed:', err);
-    }
-  }
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: 'Adaptive Daily Routine Backup', text: json });
-      return;
-    } catch (err) {
-      if (err.name === 'AbortError') return;
-      console.error('Backup text share failed:', err);
-    }
-  }
-
+  // Every path here awaits a share/clipboard call, leaving the button
+  // clickable in the meantime - a fast double-tap could otherwise open two
+  // overlapping native share sheets.
+  if (backupExportBtn.disabled) return;
+  backupExportBtn.disabled = true;
   try {
-    await navigator.clipboard.writeText(json);
-    showToast(toastEls, 'Backup copied to clipboard', null, null);
-  } catch (err) {
-    console.error('Backup clipboard copy failed:', err);
-    showToast(toastEls, 'Could not export backup — try again', null, null);
+    const json = buildBackupJson();
+    const filename = `adaptive-routine-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    const file = new File([json], filename, { type: 'application/json' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Adaptive Daily Routine Backup' });
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        console.error('Backup file share failed:', err);
+      }
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Adaptive Daily Routine Backup', text: json });
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        console.error('Backup text share failed:', err);
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(json);
+      showToast(toastEls, 'Backup copied to clipboard', null, null);
+    } catch (err) {
+      console.error('Backup clipboard copy failed:', err);
+      showToast(toastEls, 'Could not export backup — try again', null, null);
+    }
+  } finally {
+    backupExportBtn.disabled = false;
   }
 }
 
@@ -895,6 +915,11 @@ async function createCustomTemplate(name, anchors) {
 }
 
 async function saveNewTemplate() {
+  // createCustomTemplate awaits a fetch, leaving this button clickable for
+  // that whole window - a fast double-tap before it resolves would otherwise
+  // fire this twice and create two templates from one tap.
+  if (builderSaveBtn.disabled) return;
+  builderSaveBtn.disabled = true;
   try {
     const id = await createCustomTemplate(builderName, builderAnchors);
     buildMergedTemplateIndex();
@@ -907,6 +932,8 @@ async function saveNewTemplate() {
   } catch (err) {
     console.error('Template creation failed:', err);
     showToast(toastEls, 'Could not create template — try again', null, null);
+  } finally {
+    builderSaveBtn.disabled = false;
   }
 }
 
@@ -1003,7 +1030,7 @@ document.getElementById('builder-cancel-name').addEventListener('click', closeTe
 document.getElementById('builder-cancel-anchors').addEventListener('click', closeTemplateBuilder);
 document.getElementById('builder-name-next').addEventListener('click', goToAnchorStep);
 document.getElementById('builder-anchor-add-btn').addEventListener('click', addBuilderAnchor);
-document.getElementById('builder-save-btn').addEventListener('click', saveNewTemplate);
+builderSaveBtn.addEventListener('click', saveNewTemplate);
 
 async function completeOnboarding(id) {
   setSelectedTemplateId(id);
