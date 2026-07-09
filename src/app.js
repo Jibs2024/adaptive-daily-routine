@@ -41,7 +41,7 @@ import {
 // there's no build step to stamp this automatically, so the number is the
 // single source of truth for "what did I last touch," matched to the cache
 // version so the two can be cross-referenced against the commit log.
-const APP_VERSION = 'v43 · 2026-07-09';
+const APP_VERSION = 'v44 · 2026-07-09';
 
 const updateBannerEl = document.getElementById('update-banner');
 const updateBannerBtn = document.getElementById('update-banner-btn');
@@ -486,9 +486,9 @@ function renderAddRowForm() {
       <button class="add-row-confirm-btn" id="add-row-confirm">Add</button>
     </div>
   `;
-  document.getElementById('add-row-confirm').addEventListener('click', () => {
-    const timeInput = document.getElementById('add-row-time');
-    const titleInput = document.getElementById('add-row-title');
+  const timeInput = document.getElementById('add-row-time');
+  const titleInput = document.getElementById('add-row-title');
+  function confirmAddRow() {
     const title = titleInput.value.trim();
     if (!timeInput.value || !title) return;
     const newRow = {
@@ -502,6 +502,15 @@ function renderAddRowForm() {
     persistCustomTemplateIfNeeded();
     refreshSchedule();
     renderAddRowForm();
+  }
+  document.getElementById('add-row-confirm').addEventListener('click', confirmAddRow);
+  [timeInput, titleInput].forEach((input) => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        confirmAddRow();
+      }
+    });
   });
 }
 
@@ -761,6 +770,12 @@ confirmDialogBackdrop.addEventListener('click', (e) => {
 confirmDialogTypedInputEl.addEventListener('input', () => {
   if (!requiredTypedWord) return;
   confirmProceedBtn.disabled = confirmDialogTypedInputEl.value.trim().toUpperCase() !== requiredTypedWord.toUpperCase();
+});
+confirmDialogTypedInputEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !confirmProceedBtn.disabled) {
+    e.preventDefault();
+    confirmProceedBtn.click();
+  }
 });
 confirmProceedBtn.addEventListener('click', () => {
   const action = pendingConfirmAction;
@@ -1065,6 +1080,14 @@ scheduleEl.addEventListener('click', (e) => {
 // already a real button and gets native keyboard support for free.
 scheduleEl.addEventListener('keydown', (e) => {
   if (e.key !== 'Enter' && e.key !== ' ') return;
+  const editForm = e.target.closest('.row-edit-form');
+  if (editForm) {
+    // Space should type a space in the text inputs, not submit - only Enter does.
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    saveEditRow(Number(editForm.dataset.index));
+    return;
+  }
   if (e.target.closest('.row-delete-btn')) return;
   const rowEl = e.target.closest('.row[data-index]');
   if (!rowEl) return;
@@ -1084,6 +1107,20 @@ document.getElementById('builder-cancel-anchors').addEventListener('click', clos
 document.getElementById('builder-name-next').addEventListener('click', goToAnchorStep);
 document.getElementById('builder-anchor-add-btn').addEventListener('click', addBuilderAnchor);
 builderSaveBtn.addEventListener('click', saveNewTemplate);
+builderNameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    goToAnchorStep();
+  }
+});
+[builderAnchorTimeInput, builderAnchorLabelInput].forEach((input) => {
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addBuilderAnchor();
+    }
+  });
+});
 
 async function completeOnboarding(id) {
   setSelectedTemplateId(id);

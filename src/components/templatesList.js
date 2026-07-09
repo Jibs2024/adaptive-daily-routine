@@ -83,4 +83,14 @@ export function renderTemplatesList(container, templates, currentId, renamingId,
       handlers.onCancelRename();
     });
   });
+  container.querySelectorAll('.template-rename-input').forEach((input) => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handlers.onSaveRename(input.closest('.template-rename-form').dataset.id, input.value);
+      }
+    });
+    input.focus();
+    input.select();
+  });
 }
