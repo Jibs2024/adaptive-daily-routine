@@ -108,6 +108,26 @@
   .log-day.recovery { border-color: var(--recovery); color: var(--recovery); }
   .log-day .d { font-size: 9px; opacity: 0.7; display: block; margin-bottom: 2px; }
 
+  .history-box {
+    margin-top: 16px; padding: 14px 16px; background: var(--bg-card); border-radius: 10px;
+    border: 1px solid var(--line);
+  }
+  .history-box strong { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); display: block; margin-bottom: 10px; }
+  .history-list { max-height: 340px; overflow-y: auto; }
+  .history-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 9px 2px; border-bottom: 1px solid var(--line); font-size: 13px;
+  }
+  .history-row:last-child { border-bottom: none; }
+  .history-date { color: var(--text); }
+  .history-mode {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 9px;
+    border-radius: 999px; flex-shrink: 0;
+  }
+  .history-mode.full { color: var(--full); border: 1px solid var(--full); }
+  .history-mode.recovery { color: var(--recovery); border: 1px solid var(--recovery); }
+  .history-empty { color: var(--text-dim); font-size: 13px; text-align: center; padding: 10px 0; }
+
   .export-btn {
     display: block; width: 100%; margin-top: 14px; background: none; border: 1px solid var(--line);
     color: var(--text-dim); padding: 10px; border-radius: 8px; font-size: 13px; cursor: pointer; text-align: center;
@@ -507,6 +527,11 @@
       <strong>Mode log — last 7 days</strong>
       <div class="log-days" id="log-days"></div>
       <button class="export-btn" id="export-log">Export full history</button>
+    </div>
+
+    <div class="history-box">
+      <strong>Full history</strong>
+      <div class="history-list" id="history-list"></div>
     </div>
   </section>
 

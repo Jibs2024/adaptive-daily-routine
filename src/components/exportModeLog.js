@@ -1,6 +1,6 @@
 import { showToast } from './toast.js';
 
-function formatDate(dateStr) {
+export function formatDate(dateStr) {
   const [year, month, day] = dateStr.split('-').map(Number);
   return new Date(year, month - 1, day).toLocaleDateString(undefined, {
     month: 'long',
@@ -9,7 +9,7 @@ function formatDate(dateStr) {
   });
 }
 
-function formatMode(mode) {
+export function formatMode(mode) {
   return mode === 'full' ? 'Full' : 'Recovery';
 }
 

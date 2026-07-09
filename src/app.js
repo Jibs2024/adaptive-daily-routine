@@ -6,7 +6,7 @@ import {
   closeDetailSheet,
   getPendingStaticContentEdit,
 } from './components/detailSheet.js';
-import { renderModeLog } from './components/modeLog.js';
+import { renderModeLog, renderFullHistory } from './components/modeLog.js';
 import { renderNavBar } from './components/navBar.js';
 import { showToast, hideToast } from './components/toast.js';
 import { shareModeLog } from './components/exportModeLog.js';
@@ -81,6 +81,7 @@ const sheetEls = {
 const sheetCloseBtn = document.getElementById('sheet-close');
 const sheetEditBtn = document.getElementById('sheet-edit');
 const logDaysEl = document.getElementById('log-days');
+const historyListEl = document.getElementById('history-list');
 const exportBtn = document.getElementById('export-log');
 const navBarEl = document.getElementById('bottom-nav');
 const viewEls = {
@@ -788,6 +789,7 @@ async function render() {
     refreshSchedule();
     renderAddRowForm();
     renderModeLog(logDaysEl, getLast7Days());
+    renderFullHistory(historyListEl, getAllModeLogEntries());
   } catch (err) {
     console.error('Render failed:', err);
     scheduleEl.innerHTML = '<div class="render-error">Something went wrong loading this schedule. Try switching modes or reloading the app.</div>';
