@@ -41,7 +41,7 @@ import {
 // there's no build step to stamp this automatically, so the number is the
 // single source of truth for "what did I last touch," matched to the cache
 // version so the two can be cross-referenced against the commit log.
-const APP_VERSION = 'v42 · 2026-07-09';
+const APP_VERSION = 'v43 · 2026-07-09';
 
 const updateBannerEl = document.getElementById('update-banner');
 const updateBannerBtn = document.getElementById('update-banner-btn');
@@ -99,6 +99,7 @@ const sheetCloseBtn = document.getElementById('sheet-close');
 const sheetEditBtn = document.getElementById('sheet-edit');
 const logDaysEl = document.getElementById('log-days');
 const historyListEl = document.getElementById('history-list');
+const historyFilterSelectEl = document.getElementById('history-filter-select');
 const exportBtn = document.getElementById('export-log');
 const navBarEl = document.getElementById('bottom-nav');
 const viewEls = {
@@ -158,6 +159,7 @@ let lastDeletedRow = null;
 let builderName = '';
 let builderAnchors = [];
 let renamingTemplateId = null;
+let historyFilterMonth = 'all';
 
 function updateView() {
   Object.entries(viewEls).forEach(([id, el]) => {
@@ -966,6 +968,28 @@ async function saveNewTemplate() {
   }
 }
 
+function refreshHistory() {
+  const entries = getAllModeLogEntries();
+  const months = [...new Set(entries.map((e) => e.date.slice(0, 7)))].sort().reverse();
+  const options = ['<option value="all">All time</option>'].concat(
+    months.map((m) => {
+      const [y, mo] = m.split('-').map(Number);
+      const label = new Date(y, mo - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+      return `<option value="${m}">${label}</option>`;
+    })
+  );
+  historyFilterSelectEl.innerHTML = options.join('');
+  historyFilterSelectEl.value = historyFilterMonth;
+
+  const filtered = historyFilterMonth === 'all' ? entries : entries.filter((e) => e.date.startsWith(historyFilterMonth));
+  renderFullHistory(historyListEl, filtered);
+}
+
+historyFilterSelectEl.addEventListener('change', () => {
+  historyFilterMonth = historyFilterSelectEl.value;
+  refreshHistory();
+});
+
 async function render() {
   closeSheet();
   scheduleEditMode = false;
@@ -983,7 +1007,7 @@ async function render() {
     refreshSchedule();
     renderAddRowForm();
     renderModeLog(logDaysEl, getLast7Days());
-    renderFullHistory(historyListEl, getAllModeLogEntries());
+    refreshHistory();
   } catch (err) {
     console.error('Render failed:', err);
     scheduleEl.removeAttribute('aria-busy');

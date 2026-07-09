@@ -149,7 +149,12 @@
     margin-top: 16px; padding: 14px 16px; background: var(--bg-card); border-radius: 10px;
     border: 1px solid var(--line);
   }
-  .history-box strong { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); display: block; margin-bottom: 10px; }
+  .history-box-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .history-box strong { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+  .history-filter-select {
+    background: #14181B; border: 1px solid var(--line); border-radius: 6px; color: var(--text-dim);
+    font-size: 12px; font-family: inherit; padding: 5px 8px;
+  }
   .history-list { max-height: 340px; overflow-y: auto; }
   .history-row {
     display: flex; justify-content: space-between; align-items: center; gap: 10px;
@@ -605,7 +610,10 @@
     </div>
 
     <div class="history-box">
-      <strong>Full history</strong>
+      <div class="history-box-header">
+        <strong>Full history</strong>
+        <select class="history-filter-select" id="history-filter-select" aria-label="Filter history by month"></select>
+      </div>
       <div class="history-list" id="history-list"></div>
     </div>
   </section>
