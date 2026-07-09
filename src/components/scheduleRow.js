@@ -25,7 +25,17 @@ export function renderScheduleRow(row, index, scheduleEditMode) {
   `;
 }
 
-export function renderSchedule(container, rows, mode, scheduleEditMode = false) {
+export function renderSchedule(container, rows, mode, scheduleEditMode = false, isCustom = false) {
   container.className = 'mode-' + mode;
+  if (rows.length === 0) {
+    const addBtn = isCustom ? '<button class="empty-schedule-add-btn">+ Add a task</button>' : '';
+    container.innerHTML = `
+      <div class="empty-schedule">
+        <p class="empty-schedule-text">This template has no tasks yet.</p>
+        ${addBtn}
+      </div>
+    `;
+    return;
+  }
   container.innerHTML = rows.map((row, i) => renderScheduleRow(row, i, scheduleEditMode)).join('');
 }

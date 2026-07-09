@@ -156,6 +156,10 @@ function isCurrentTemplateCustom() {
   return !!(entry && entry.isCustom);
 }
 
+function refreshSchedule() {
+  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode, isCurrentTemplateCustom());
+}
+
 function buildMergedTemplateIndex() {
   const customEntries = getCustomTemplateIds().map((id) => {
     const data = getCustomTemplate(id);
@@ -305,7 +309,7 @@ function toggleCheck(groupIdx, itemIdx) {
   const item = row.checklist.content[groupIdx].items[itemIdx];
   item.checked = !item.checked;
   refreshSheet();
-  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+  refreshSchedule();
   persistChecklistIfNeeded(row);
 }
 
@@ -314,7 +318,7 @@ function removeItem(groupIdx, itemIdx) {
   const [item] = row.checklist.content[groupIdx].items.splice(itemIdx, 1);
   lastRemoved = { row, groupIdx, itemIdx, item };
   refreshSheet();
-  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+  refreshSchedule();
   persistChecklistIfNeeded(row);
   showToast(toastEls, `Removed "${item.name}"`, 'Undo', undoRemove);
 }
@@ -325,7 +329,7 @@ function undoRemove() {
   row.checklist.content[groupIdx].items.splice(itemIdx, 0, item);
   lastRemoved = null;
   if (currentRows[openRowIndex] === row) refreshSheet();
-  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+  refreshSchedule();
   persistChecklistIfNeeded(row);
 }
 
@@ -340,7 +344,7 @@ function addItem(groupIdx, name) {
   const row = currentRows[openRowIndex];
   row.checklist.content[groupIdx].items.push({ name: trimmed, checked: false });
   refreshSheet();
-  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+  refreshSchedule();
   persistChecklistIfNeeded(row);
 }
 
@@ -373,7 +377,7 @@ function assignChecklist() {
   addingToGroup = 0;
   renderDetailSheet(sheetEls, row, { editMode, addingToGroup }, handlers);
   updateEditButton(row);
-  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+  refreshSchedule();
 }
 
 function removeChecklist() {
@@ -389,7 +393,7 @@ function removeChecklist() {
 
   renderDetailSheet(sheetEls, row, { editMode, addingToGroup }, handlers);
   updateEditButton(row);
-  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+  refreshSchedule();
 }
 
 const handlers = {
@@ -465,7 +469,7 @@ function renderAddRowForm() {
     };
     insertRowByTime(currentRows, newRow);
     persistCustomTemplateIfNeeded();
-    renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+    refreshSchedule();
     renderAddRowForm();
   });
 }
@@ -473,7 +477,7 @@ function renderAddRowForm() {
 function toggleScheduleEditMode() {
   scheduleEditMode = !scheduleEditMode;
   updateScheduleTools();
-  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+  refreshSchedule();
   renderAddRowForm();
 }
 
@@ -482,7 +486,7 @@ function deleteRow(index) {
   const [removed] = currentRows.splice(index, 1);
   lastDeletedRow = { index, row: removed };
   persistCustomTemplateIfNeeded();
-  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+  refreshSchedule();
   showToast(toastEls, `Removed "${removed.title}"`, 'Undo', undoDeleteRow);
 }
 
@@ -491,7 +495,7 @@ function undoDeleteRow() {
   currentRows.splice(lastDeletedRow.index, 0, lastDeletedRow.row);
   lastDeletedRow = null;
   persistCustomTemplateIfNeeded();
-  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+  refreshSchedule();
 }
 
 // ---- Templates tab ----
@@ -685,7 +689,7 @@ async function render() {
     subtitleEl.textContent = template.subtitle;
     modeNoteEl.textContent = modeNotes[currentMode];
     updateScheduleTools();
-    renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode);
+    refreshSchedule();
     renderAddRowForm();
     renderModeLog(logDaysEl, getLast7Days());
   } catch (err) {
@@ -707,6 +711,11 @@ async function selectMode(mode) {
 }
 
 scheduleEl.addEventListener('click', (e) => {
+  const addBtn = e.target.closest('.empty-schedule-add-btn');
+  if (addBtn) {
+    if (!scheduleEditMode) toggleScheduleEditMode();
+    return;
+  }
   const deleteBtn = e.target.closest('.row-delete-btn');
   if (deleteBtn) {
     deleteRow(Number(deleteBtn.dataset.index));
