@@ -26,8 +26,21 @@ function safeParse(raw, key) {
   }
 }
 
+// Local calendar date as YYYY-MM-DD. Deliberately NOT toISOString().slice(0,10)
+// - that reads the UTC date, which can be a day off from what the device's
+// clock (and Date.getDay(), used elsewhere for weekly-variant content) says
+// "today" is, for anyone west of UTC in the evening or east of it after
+// midnight. Every date-stamped key in this file is written and read through
+// this function, so the mismatch can't reappear via some other date-key path.
+function localDateStr(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 function dateKey(date) {
-  return PREFIX + date.toISOString().slice(0, 10);
+  return PREFIX + localDateStr(date);
 }
 
 export function logMode(mode, date = new Date()) {
@@ -44,7 +57,7 @@ export function getLast7Days() {
     const d = new Date();
     d.setDate(d.getDate() - i);
     days.push({
-      date: d.toISOString().slice(0, 10),
+      date: localDateStr(d),
       label: d.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 2),
       mode: getMode(d),
     });
@@ -63,7 +76,7 @@ const CHECKLIST_PREFIX = 'checklist:';
 
 function checklistKey(templateId, mode, rowId, scope) {
   const base = `${CHECKLIST_PREFIX}${templateId}:${mode}:${rowId}`;
-  return scope === 'daily' ? `${base}:${new Date().toISOString().slice(0, 10)}` : base;
+  return scope === 'daily' ? `${base}:${localDateStr(new Date())}` : base;
 }
 
 export function getChecklistState(templateId, mode, rowId, scope) {
@@ -94,7 +107,9 @@ export function cleanupOldDailyKeys(maxAgeDays = 90) {
       if (!key.startsWith(CHECKLIST_PREFIX)) return;
       const lastPart = key.slice(key.lastIndexOf(':') + 1);
       if (!datePattern.test(lastPart)) return;
-      const keyTime = new Date(`${lastPart}T00:00:00Z`).getTime();
+      // Keys are stamped with the local calendar date (see localDateStr) -
+      // parse without a Z suffix so this reads as local midnight too, not UTC.
+      const keyTime = new Date(`${lastPart}T00:00:00`).getTime();
       if (!Number.isNaN(keyTime) && keyTime < cutoff) {
         localStorage.removeItem(key);
         removed++;
