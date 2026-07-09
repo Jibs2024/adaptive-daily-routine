@@ -112,6 +112,8 @@ const builderNameInput = document.getElementById('builder-name-input');
 const builderAnchorListEl = document.getElementById('builder-anchor-list');
 const builderAnchorLabelInput = document.getElementById('builder-anchor-label');
 const builderAnchorTimeInput = document.getElementById('builder-anchor-time');
+const builderNameErrorEl = document.getElementById('builder-name-error');
+const builderAnchorErrorEl = document.getElementById('builder-anchor-error');
 
 let staticTemplateIndex = [];
 let templateIndex = [];
@@ -703,6 +705,8 @@ function openTemplateBuilder() {
   builderNameInput.value = '';
   builderAnchorLabelInput.value = '';
   builderAnchorTimeInput.value = '';
+  builderNameErrorEl.textContent = '';
+  builderAnchorErrorEl.textContent = '';
   builderStepName.style.display = '';
   builderStepAnchors.style.display = 'none';
   renderAnchorList(builderAnchorListEl, builderAnchors, removeBuilderAnchor);
@@ -717,7 +721,11 @@ function closeTemplateBuilder() {
 
 function goToAnchorStep() {
   const name = builderNameInput.value.trim();
-  if (!name) return;
+  if (!name) {
+    builderNameErrorEl.textContent = 'Enter a name for this template.';
+    return;
+  }
+  builderNameErrorEl.textContent = '';
   builderName = name;
   builderStepName.style.display = 'none';
   builderStepAnchors.style.display = '';
@@ -727,7 +735,16 @@ function goToAnchorStep() {
 function addBuilderAnchor() {
   const label = builderAnchorLabelInput.value.trim();
   const time24 = builderAnchorTimeInput.value;
-  if (!label || !time24) return;
+  if (!label || !time24) {
+    builderAnchorErrorEl.textContent = 'Enter both a label and a time.';
+    return;
+  }
+  const isDuplicate = builderAnchors.some((a) => a.label.toLowerCase() === label.toLowerCase());
+  if (isDuplicate) {
+    builderAnchorErrorEl.textContent = `An anchor named "${label}" already exists.`;
+    return;
+  }
+  builderAnchorErrorEl.textContent = '';
   builderAnchors.push({ label, displayTime: formatDisplayTime(parse24hTime(time24)) });
   renderAnchorList(builderAnchorListEl, builderAnchors, removeBuilderAnchor);
   builderAnchorLabelInput.value = '';

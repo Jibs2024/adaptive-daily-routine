@@ -339,6 +339,7 @@
     width: 100%; background: var(--bg-card); border: 1px solid var(--line); border-radius: 8px;
     padding: 12px 14px; color: var(--text); font-size: 16px; font-family: inherit; margin-bottom: 14px;
   }
+  .builder-error { color: var(--anchor-text); font-size: 12.5px; margin-top: -8px; margin-bottom: 12px; min-height: 15px; }
   .builder-actions { display: flex; gap: 10px; margin-top: 8px; }
   .builder-cancel-btn, .builder-next-btn, .builder-save-btn {
     flex: 1; padding: 11px; border-radius: 999px; font-size: 13px; cursor: pointer; border: 1px solid var(--line);
@@ -466,6 +467,7 @@
     <h1 class="onboarding-title">New Template</h1>
     <p class="onboarding-subtitle">Give it a name.</p>
     <input type="text" id="builder-name-input" class="builder-text-input" placeholder="e.g. Medication Schedule" aria-label="Template name">
+    <div class="builder-error" id="builder-name-error" role="alert"></div>
     <div class="builder-actions">
       <button class="builder-cancel-btn" id="builder-cancel-name">Cancel</button>
       <button class="builder-next-btn" id="builder-name-next">Next</button>
@@ -481,6 +483,7 @@
       <input type="text" id="builder-anchor-label" class="builder-text-input" placeholder="Label" aria-label="Anchor label">
       <button class="builder-add-anchor-btn" id="builder-anchor-add-btn">Add</button>
     </div>
+    <div class="builder-error" id="builder-anchor-error" role="alert"></div>
     <div class="builder-actions">
       <button class="builder-cancel-btn" id="builder-cancel-anchors">Cancel</button>
       <button class="builder-save-btn" id="builder-save-btn">Create Template</button>
