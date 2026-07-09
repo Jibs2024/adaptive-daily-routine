@@ -41,7 +41,7 @@ import {
 // there's no build step to stamp this automatically, so the number is the
 // single source of truth for "what did I last touch," matched to the cache
 // version so the two can be cross-referenced against the commit log.
-const APP_VERSION = 'v47 · 2026-07-09';
+const APP_VERSION = 'v48 · 2026-07-09';
 
 const updateBannerEl = document.getElementById('update-banner');
 const updateBannerBtn = document.getElementById('update-banner-btn');
@@ -101,6 +101,7 @@ const sheetEditBtn = document.getElementById('sheet-edit');
 const logDaysEl = document.getElementById('log-days');
 const historyListEl = document.getElementById('history-list');
 const historyFilterSelectEl = document.getElementById('history-filter-select');
+const checklistLiveRegionEl = document.getElementById('checklist-live-region');
 const exportBtn = document.getElementById('export-log');
 const navBarEl = document.getElementById('bottom-nav');
 const viewEls = {
@@ -340,6 +341,11 @@ function toggleCheck(groupIdx, itemIdx) {
   const row = currentRows[openRowIndex];
   const item = row.checklist.content[groupIdx].items[itemIdx];
   item.checked = !item.checked;
+  // refreshSheet() below replaces the checkbox with a brand-new DOM node
+  // rather than toggling the existing one's .checked property, so the
+  // browser never fires the native state-change notification VoiceOver
+  // relies on - announce it explicitly instead.
+  checklistLiveRegionEl.textContent = `${item.name}, ${item.checked ? 'checked' : 'unchecked'}`;
   refreshSheet();
   refreshSchedule();
   persistChecklistIfNeeded(row);
