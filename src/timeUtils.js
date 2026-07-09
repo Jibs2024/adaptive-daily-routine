@@ -27,6 +27,15 @@ export function formatDisplayTime(totalMinutes) {
   return `${h}:${String(m).padStart(2, '0')}${ap}`;
 }
 
+// Formats minutes since midnight into "HH:MM" 24h style, for pre-filling
+// <input type="time"> values (e.g. when opening a row for editing).
+export function format24hTime(totalMinutes) {
+  const mins = ((totalMinutes % 1440) + 1440) % 1440;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
 // A schedule day can start in the evening and wrap past midnight (e.g. Generic
 // runs 10:00pm -> 6:00am -> ... -> 9:30pm). Raw clock minutes alone don't sort
 // correctly across that wrap, so every time gets converted to "minutes elapsed

@@ -126,6 +126,7 @@ let editMode = false;
 let addingToGroup = null;
 let lastRemoved = null;
 let scheduleEditMode = false;
+let editingRowIndex = null;
 let lastDeletedRow = null;
 let builderName = '';
 let builderAnchors = [];
@@ -157,7 +158,7 @@ function isCurrentTemplateCustom() {
 }
 
 function refreshSchedule() {
-  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode, isCurrentTemplateCustom());
+  renderSchedule(scheduleEl, currentRows, currentMode, scheduleEditMode, isCurrentTemplateCustom(), editingRowIndex);
 }
 
 function buildMergedTemplateIndex() {
@@ -476,6 +477,7 @@ function renderAddRowForm() {
 
 function toggleScheduleEditMode() {
   scheduleEditMode = !scheduleEditMode;
+  editingRowIndex = null;
   updateScheduleTools();
   refreshSchedule();
   renderAddRowForm();
@@ -485,6 +487,7 @@ function deleteRow(index) {
   if (!isCurrentTemplateCustom()) return;
   const [removed] = currentRows.splice(index, 1);
   lastDeletedRow = { index, row: removed };
+  editingRowIndex = null;
   persistCustomTemplateIfNeeded();
   refreshSchedule();
   showToast(toastEls, `Removed "${removed.title}"`, 'Undo', undoDeleteRow);
@@ -494,6 +497,35 @@ function undoDeleteRow() {
   if (!lastDeletedRow) return;
   currentRows.splice(lastDeletedRow.index, 0, lastDeletedRow.row);
   lastDeletedRow = null;
+  editingRowIndex = null;
+  persistCustomTemplateIfNeeded();
+  refreshSchedule();
+}
+
+function startEditRow(index) {
+  editingRowIndex = index;
+  refreshSchedule();
+}
+
+function cancelEditRow() {
+  editingRowIndex = null;
+  refreshSchedule();
+}
+
+function saveEditRow(index) {
+  const form = scheduleEl.querySelector(`.row-edit-form[data-index="${index}"]`);
+  if (!form) return;
+  const timeInput = form.querySelector('.row-edit-time');
+  const titleInput = form.querySelector('.row-edit-title');
+  const title = titleInput.value.trim();
+  if (!timeInput.value || !title) return;
+
+  const [row] = currentRows.splice(index, 1);
+  row.time = formatDisplayTime(parse24hTime(timeInput.value));
+  row.title = title;
+  insertRowByTime(currentRows, row);
+
+  editingRowIndex = null;
   persistCustomTemplateIfNeeded();
   refreshSchedule();
 }
@@ -679,6 +711,7 @@ async function saveNewTemplate() {
 async function render() {
   closeSheet();
   scheduleEditMode = false;
+  editingRowIndex = null;
 
   try {
     const template = await loadTemplate(currentTemplateId);
@@ -714,6 +747,21 @@ scheduleEl.addEventListener('click', (e) => {
   const addBtn = e.target.closest('.empty-schedule-add-btn');
   if (addBtn) {
     if (!scheduleEditMode) toggleScheduleEditMode();
+    return;
+  }
+  const editSaveBtn = e.target.closest('.row-edit-save-btn');
+  if (editSaveBtn) {
+    saveEditRow(Number(editSaveBtn.dataset.index));
+    return;
+  }
+  const editCancelBtn = e.target.closest('.row-edit-cancel-btn');
+  if (editCancelBtn) {
+    cancelEditRow();
+    return;
+  }
+  const editBtn = e.target.closest('.row-edit-btn');
+  if (editBtn) {
+    startEditRow(Number(editBtn.dataset.index));
     return;
   }
   const deleteBtn = e.target.closest('.row-delete-btn');
