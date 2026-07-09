@@ -41,7 +41,7 @@ import {
 // there's no build step to stamp this automatically, so the number is the
 // single source of truth for "what did I last touch," matched to the cache
 // version so the two can be cross-referenced against the commit log.
-const APP_VERSION = 'v44 · 2026-07-09';
+const APP_VERSION = 'v45 · 2026-07-09';
 
 const updateBannerEl = document.getElementById('update-banner');
 const updateBannerBtn = document.getElementById('update-banner-btn');
@@ -761,6 +761,14 @@ function closeConfirmDialog() {
   confirmDialogTypedEl.style.display = 'none';
   confirmProceedBtn.disabled = false;
   releaseFocus();
+  // The confirm dialog can open on top of the template builder (discard-
+  // progress prompt) - trapFocus only tracks one active trap, so opening
+  // this one silently replaced the builder's. If the builder is still open
+  // (i.e. the user cancelled rather than confirmed discard), re-trap it so
+  // Tab doesn't escape to content hidden behind it.
+  if (templateBuilderEl.style.display === 'flex') {
+    trapFocus(templateBuilderEl, { onEscape: requestCloseTemplateBuilder });
+  }
 }
 
 confirmCancelBtn.addEventListener('click', closeConfirmDialog);
@@ -898,12 +906,28 @@ function openTemplateBuilder() {
   builderStepAnchors.style.display = 'none';
   renderAnchorList(builderAnchorListEl, builderAnchors, removeBuilderAnchor);
   templateBuilderEl.style.display = 'flex';
-  trapFocus(templateBuilderEl, { onEscape: closeTemplateBuilder });
+  trapFocus(templateBuilderEl, { onEscape: requestCloseTemplateBuilder });
 }
 
 function closeTemplateBuilder() {
   templateBuilderEl.style.display = 'none';
   releaseFocus();
+}
+
+function hasUnsavedBuilderProgress() {
+  return builderNameInput.value.trim() !== '' || builderAnchors.length > 0;
+}
+
+// Cancel/Escape from either builder step routes through here rather than
+// straight to closeTemplateBuilder, so typed-in progress isn't silently
+// thrown away by one accidental tap. A still-empty builder (nothing typed
+// yet) has nothing to lose, so it closes immediately without a prompt.
+function requestCloseTemplateBuilder() {
+  if (!hasUnsavedBuilderProgress()) {
+    closeTemplateBuilder();
+    return;
+  }
+  showConfirmDialog('Discard this new template? Your progress will be lost.', closeTemplateBuilder);
 }
 
 function goToAnchorStep() {
@@ -1102,8 +1126,8 @@ exportBtn.addEventListener('click', () => shareModeLog(getAllModeLogEntries(), t
 scheduleEditBtn.addEventListener('click', toggleScheduleEditMode);
 
 newTemplateBtn.addEventListener('click', openTemplateBuilder);
-document.getElementById('builder-cancel-name').addEventListener('click', closeTemplateBuilder);
-document.getElementById('builder-cancel-anchors').addEventListener('click', closeTemplateBuilder);
+document.getElementById('builder-cancel-name').addEventListener('click', requestCloseTemplateBuilder);
+document.getElementById('builder-cancel-anchors').addEventListener('click', requestCloseTemplateBuilder);
 document.getElementById('builder-name-next').addEventListener('click', goToAnchorStep);
 document.getElementById('builder-anchor-add-btn').addEventListener('click', addBuilderAnchor);
 builderSaveBtn.addEventListener('click', saveNewTemplate);
