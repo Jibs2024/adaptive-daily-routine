@@ -1,5 +1,4 @@
 import { renderModeToggle } from './components/modeToggle.js';
-import { renderTemplatePicker } from './components/templatePicker.js';
 import { renderSchedule } from './components/scheduleRow.js';
 import {
   renderDetailSheet,
@@ -42,7 +41,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-const templatePickerEl = document.getElementById('template-picker');
 const modeToggleEl = document.getElementById('mode-toggle');
 const modeNoteEl = document.getElementById('mode-note');
 const subtitleEl = document.getElementById('subtitle');
@@ -652,7 +650,6 @@ async function render() {
     const template = await loadTemplate(currentTemplateId);
     currentRows = template.schedule[currentMode];
 
-    renderTemplatePicker(templatePickerEl, templateIndex, currentTemplateId, selectTemplate);
     renderModeToggle(modeToggleEl, currentMode, selectMode);
 
     subtitleEl.textContent = template.subtitle;
