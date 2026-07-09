@@ -37,9 +37,17 @@ import {
   cleanupOldDailyKeys,
 } from './storage.js';
 
+// Bumped by hand alongside service-worker.js's CACHE_NAME on every commit -
+// there's no build step to stamp this automatically, so the number is the
+// single source of truth for "what did I last touch," matched to the cache
+// version so the two can be cross-referenced against the commit log.
+const APP_VERSION = 'v38 · 2026-07-09';
+
 const updateBannerEl = document.getElementById('update-banner');
 const updateBannerBtn = document.getElementById('update-banner-btn');
 const offlineBannerEl = document.getElementById('offline-banner');
+const versionFooterEl = document.getElementById('version-footer');
+versionFooterEl.textContent = APP_VERSION;
 
 updateBannerBtn.addEventListener('click', () => window.location.reload());
 
