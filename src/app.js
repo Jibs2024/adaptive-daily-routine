@@ -14,6 +14,7 @@ import { renderOnboarding } from './components/onboarding.js';
 import { renderTemplatesList } from './components/templatesList.js';
 import { renderAnchorList } from './components/templateBuilder.js';
 import { parse24hTime, formatDisplayTime, insertRowByTime } from './timeUtils.js';
+import { trapFocus, releaseFocus } from './focusTrap.js';
 import {
   logMode,
   getMode,
@@ -78,6 +79,7 @@ const templatesListEl = document.getElementById('templates-list');
 const newTemplateBtn = document.getElementById('new-template-btn');
 const resetDataBtn = document.getElementById('reset-data-btn');
 const confirmDialogBackdrop = document.getElementById('confirm-dialog-backdrop');
+const confirmDialogEl = document.getElementById('confirm-dialog');
 const confirmDialogText = document.getElementById('confirm-dialog-text');
 const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
 const confirmProceedBtn = document.getElementById('confirm-proceed-btn');
@@ -268,6 +270,7 @@ function closeSheet() {
   editMode = false;
   addingToGroup = null;
   hideToast(toastEls);
+  releaseFocus();
 }
 
 function refreshSheet() {
@@ -387,6 +390,7 @@ function openRow(index) {
   hideToast(toastEls);
   renderDetailSheet(sheetEls, row, { editMode, addingToGroup }, handlers);
   updateEditButton(row);
+  trapFocus(sheetEls.sheet, { onEscape: closeSheet });
 }
 
 function slugify(str) {
@@ -531,11 +535,13 @@ function showConfirmDialog(text, onConfirm) {
   confirmDialogText.textContent = text;
   pendingConfirmAction = onConfirm;
   confirmDialogBackdrop.classList.add('open');
+  trapFocus(confirmDialogEl, { onEscape: closeConfirmDialog });
 }
 
 function closeConfirmDialog() {
   confirmDialogBackdrop.classList.remove('open');
   pendingConfirmAction = null;
+  releaseFocus();
 }
 
 confirmCancelBtn.addEventListener('click', closeConfirmDialog);
@@ -580,10 +586,12 @@ function openTemplateBuilder() {
   builderStepAnchors.style.display = 'none';
   renderAnchorList(builderAnchorListEl, builderAnchors, removeBuilderAnchor);
   templateBuilderEl.style.display = 'flex';
+  trapFocus(templateBuilderEl, { onEscape: closeTemplateBuilder });
 }
 
 function closeTemplateBuilder() {
   templateBuilderEl.style.display = 'none';
+  releaseFocus();
 }
 
 function goToAnchorStep() {
@@ -592,6 +600,7 @@ function goToAnchorStep() {
   builderName = name;
   builderStepName.style.display = 'none';
   builderStepAnchors.style.display = '';
+  builderAnchorTimeInput.focus();
 }
 
 function addBuilderAnchor() {
@@ -717,6 +726,7 @@ async function completeOnboarding(id) {
   setSelectedTemplateId(id);
   currentTemplateId = id;
   onboardingEl.style.display = 'none';
+  releaseFocus();
   updateView();
   await render();
 }
@@ -756,6 +766,7 @@ async function init() {
   } else {
     renderOnboarding(onboardingOptionsEl, templateIndex, completeOnboarding);
     onboardingEl.style.display = 'flex';
+    trapFocus(onboardingEl);
   }
 }
 
