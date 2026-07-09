@@ -41,13 +41,14 @@ import {
 // there's no build step to stamp this automatically, so the number is the
 // single source of truth for "what did I last touch," matched to the cache
 // version so the two can be cross-referenced against the commit log.
-const APP_VERSION = 'v46 · 2026-07-09';
+const APP_VERSION = 'v47 · 2026-07-09';
 
 const updateBannerEl = document.getElementById('update-banner');
 const updateBannerBtn = document.getElementById('update-banner-btn');
 const offlineBannerEl = document.getElementById('offline-banner');
 const versionFooterEl = document.getElementById('version-footer');
 versionFooterEl.textContent = APP_VERSION;
+const storageUsageEl = document.getElementById('storage-usage');
 
 updateBannerBtn.addEventListener('click', () => window.location.reload());
 
@@ -580,6 +581,25 @@ function renderTemplatesTab() {
     onCancelRename: cancelRenameTemplate,
     onDuplicate: duplicateTemplate,
   });
+  renderStorageUsage();
+}
+
+function formatStorageSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(1)} KB`;
+  return `${(kb / 1024).toFixed(2)} MB`;
+}
+
+function renderStorageUsage() {
+  // localStorage has no size API - approximate as UTF-16 bytes (2 per
+  // character) across every key+value this origin has stored. Good enough
+  // for "roughly how much," not meant to be exact.
+  let chars = 0;
+  Object.keys(localStorage).forEach((key) => {
+    chars += key.length + (localStorage.getItem(key) || '').length;
+  });
+  storageUsageEl.textContent = `Using ~${formatStorageSize(chars * 2)} of local storage`;
 }
 
 async function selectTemplateFromList(id) {
