@@ -26,6 +26,19 @@ function safeParse(raw, key) {
   }
 }
 
+// Every key currently in localStorage. Deliberately NOT Object.keys(localStorage)
+// - that relies on Storage's exotic property enumeration behaving like a
+// plain object, which isn't uniformly reliable across engines/webviews.
+// localStorage.length + .key(i) is the form the spec actually guarantees,
+// and it's what backup/cleanup/lookup code here all need to trust completely.
+export function getAllStorageKeys() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    keys.push(localStorage.key(i));
+  }
+  return keys;
+}
+
 // Local calendar date as YYYY-MM-DD. Deliberately NOT toISOString().slice(0,10)
 // - that reads the UTC date, which can be a day off from what the device's
 // clock (and Date.getDay(), used elsewhere for weekly-variant content) says
@@ -66,7 +79,7 @@ export function getLast7Days() {
 }
 
 export function getAllModeLogEntries() {
-  return Object.keys(localStorage)
+  return getAllStorageKeys()
     .filter((key) => key.startsWith(PREFIX))
     .map((key) => ({ date: key.slice(PREFIX.length), mode: localStorage.getItem(key) }))
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -103,7 +116,7 @@ export function cleanupOldDailyKeys(maxAgeDays = 90) {
     const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000;
     let removed = 0;
 
-    Object.keys(localStorage).forEach((key) => {
+    getAllStorageKeys().forEach((key) => {
       if (!key.startsWith(CHECKLIST_PREFIX)) return;
       const lastPart = key.slice(key.lastIndexOf(':') + 1);
       if (!datePattern.test(lastPart)) return;
@@ -152,7 +165,7 @@ const CONTENT_PREFIX = 'content:';
 const CUSTOM_TEMPLATE_PREFIX = 'customTemplate:';
 
 export function hasAnyPriorUsage() {
-  return Object.keys(localStorage).some(
+  return getAllStorageKeys().some(
     (key) =>
       key.startsWith(PREFIX) ||
       key.startsWith(CHECKLIST_PREFIX) ||
@@ -187,7 +200,7 @@ export function setRowText(templateId, mode, rowId, text) {
 }
 
 export function getCustomTemplateIds() {
-  return Object.keys(localStorage)
+  return getAllStorageKeys()
     .filter((key) => key.startsWith(CUSTOM_TEMPLATE_PREFIX))
     .map((key) => key.slice(CUSTOM_TEMPLATE_PREFIX.length));
 }

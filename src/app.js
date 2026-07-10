@@ -35,13 +35,14 @@ import {
   saveCustomTemplate,
   deleteCustomTemplate,
   cleanupOldDailyKeys,
+  getAllStorageKeys,
 } from './storage.js';
 
 // Bumped by hand alongside service-worker.js's CACHE_NAME on every commit -
 // there's no build step to stamp this automatically, so the number is the
 // single source of truth for "what did I last touch," matched to the cache
 // version so the two can be cross-referenced against the commit log.
-const APP_VERSION = 'v49 · 2026-07-09';
+const APP_VERSION = 'v51 · 2026-07-10';
 
 const updateBannerEl = document.getElementById('update-banner');
 const updateBannerBtn = document.getElementById('update-banner-btn');
@@ -602,7 +603,7 @@ function renderStorageUsage() {
   // character) across every key+value this origin has stored. Good enough
   // for "roughly how much," not meant to be exact.
   let chars = 0;
-  Object.keys(localStorage).forEach((key) => {
+  getAllStorageKeys().forEach((key) => {
     chars += key.length + (localStorage.getItem(key) || '').length;
   });
   storageUsageEl.textContent = `Using ~${formatStorageSize(chars * 2)} of local storage`;

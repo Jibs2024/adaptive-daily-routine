@@ -2,11 +2,13 @@
 // this app writes to localStorage (templates, checklist state, overrides,
 // mode log, selected template) so the whole app state can be restored on
 // another device or after a reinstall - not just the mode-log history.
+import { getAllStorageKeys } from './storage.js';
+
 const BACKUP_VERSION = 1;
 
 export function buildBackupJson() {
   const data = {};
-  Object.keys(localStorage).forEach((key) => {
+  getAllStorageKeys().forEach((key) => {
     data[key] = localStorage.getItem(key);
   });
   const backup = {
