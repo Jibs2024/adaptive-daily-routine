@@ -1,4 +1,4 @@
-const CACHE_NAME = 'adaptive-routine-v49';
+const CACHE_NAME = 'adaptive-routine-v50';
 
 const APP_SHELL = [
   './',
@@ -45,7 +45,21 @@ const APP_SHELL = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then((cache) =>
+      // cache.addAll() lets each request go through the browser's normal HTTP
+      // cache, which can silently hand back a stale response even though
+      // CACHE_NAME changed - the exact bug that let old app shell files
+      // linger under a "new" cache. {cache: 'reload'} forces every file to
+      // come straight from the network on every install.
+      Promise.all(
+        APP_SHELL.map((url) =>
+          fetch(new Request(url, { cache: 'reload' })).then((response) => {
+            if (!response.ok) throw new Error(`Failed to fetch ${url}: ${response.status}`);
+            return cache.put(url, response);
+          })
+        )
+      )
+    )
   );
   self.skipWaiting();
 });
